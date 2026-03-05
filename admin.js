@@ -91,3 +91,17 @@ let url =
 window.open(url)
 
 }
+
+async function dropOff(id){
+
+await db
+.from("pickup_addresses")
+.update({
+status: "dropped_off",
+dropped_at: new Date()
+})
+.eq("id", id)
+
+location.reload()
+
+}
