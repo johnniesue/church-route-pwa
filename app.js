@@ -87,12 +87,8 @@ await db
 .insert([
 {
 name: name,
-address: address
+address: address,
+lat: lat,
+lng: lng
 }
 ])
-
-alert("Pickup request sent! 🚐")
-
-document.getElementById("pickupForm").reset()
-
-})
