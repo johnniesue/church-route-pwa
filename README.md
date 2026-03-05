@@ -1,172 +1,89 @@
-# Church Pickup Route Builder 🚐
+# Church Pickup 🚐
 
-A simple web app that allows parents to request church van pickup and allows administrators to generate an optimized pickup route.
+This app allows students to request a ride to church using their phone.
 
-This project was built as a lightweight Progressive Web App (PWA) using:
-
-- Supabase (database)
-- Leaflet (map display)
-- OpenStreetMap / Nominatim (address verification)
-- Google Maps (route navigation)
-- Vercel (hosting)
-
----
-
-# What This App Does
-
-### Parent Pickup Request Page
-
-Parents can submit a pickup request by entering:
-
-- Name
-- Address
-
-The system automatically:
-
-• Suggests verified addresses while typing  
-• Ensures the address is within 10 miles of the church  
-• Prevents duplicate submissions  
-• Stores the pickup location in the database
-
----
-
-### Admin Route Builder
-
-The admin page shows a live map of all pickup locations.
-
-Features include:
-
-• Live map with pickup pins  
-• Automatic refresh every 10 seconds  
-• "Drop Off" button for each pickup location  
-• Build Route button that generates an optimized route in Google Maps
-
-The route begins and ends at the church.
+Simply scan the QR code and submit your pickup request.
 
 ---
 
 # How It Works
 
-### 1. Parent submits pickup request
+### 1️⃣ Scan the QR Code
 
-Parent enters:
+Students scan the church pickup QR code using their phone camera.
 
-Name
-Address
-
-
-The system:
-
-1. Verifies the address using OpenStreetMap
-2. Converts it to latitude / longitude
-3. Checks if it is within 10 miles of the church
-4. Saves the request to Supabase
+This opens the pickup request page.
 
 ---
 
-### 2. Admin views the route board
+### 2️⃣ Enter Your Information
 
-The admin page loads all pending pickups from the database and displays them on a map.
+Fill out the form:
 
-Each location includes:
+• Your name  
+• Your home address
 
+As you type your address, the app will suggest verified addresses.
 
-Name
-Address
-Drop Off Button
-
-
----
-
-### 3. Build the route
-
-Click **Build Route** to generate an optimized driving route using Google Maps.
-
-The route includes:
-
-Church
-Pickup Stops
-Return to Church
-
-
-Google Maps automatically determines the fastest order.
+Select the correct address from the list.
 
 ---
 
-# Project Structure
+### 3️⃣ Request Pickup
 
-church-route-pwa
-│
-├── index.html # Parent pickup request form
-├── admin.html # Admin map / route builder
-├── app.js # Parent page logic
-├── admin.js # Admin map logic
-├── README.md # Project documentation
+Tap **Request Pickup**.
 
+The system will:
 
----
-
-# Database (Supabase)
-
-Table: `pickup_addresses`
-
-Columns:
-
-
-id (uuid)
-name (text)
-address (text)
-lat (float)
-lng (float)
-status (text)
-created_at (timestamp)
-dropped_at (timestamp)
-
-
-Status values:
-
-
-pending
-dropped_off
-
+• Verify the address  
+• Confirm the home is within 10 miles of the church  
+• Save the pickup request
 
 ---
 
-# Deployment
+# What Happens Next
 
-Hosted using **Vercel**
+Your pickup location is added to the driver's route.
 
-Steps:
+The driver can see:
 
-1. Push repository to GitHub
-2. Connect repo to Vercel
-3. Deploy automatically
-
----
-
-# Map Technology
-
-Map rendering uses **Leaflet + OpenStreetMap**.
-
-Address verification uses **Nominatim geocoding**.
-
-Routing is handled by **Google Maps Directions API via URL parameters**.
+• Your name  
+• Your location on the map  
+• The best route to pick everyone up
 
 ---
 
-# Future Improvements
+# Pickup Route
 
-Possible enhancements:
+The driver uses a route builder that:
 
-• Draw route directly on the map  
-• Number pickup stops automatically  
-• Real-time pickup status board  
-• SMS notifications to parents  
-• Driver mobile interface  
-• QR code for parents to request pickup
+• Shows all pickup locations on a map  
+• Optimizes the route automatically  
+• Provides turn-by-turn navigation
+
+The route always starts and ends at the church.
 
 ---
 
-# License
+# Important Notes
 
-Open source for church and community use.
+• Only submit one pickup request per house.  
+• Make sure your address is correct.  
+• Be ready outside when the church van arrives.
+
+---
+
+# Technology
+
+This system uses:
+
+• Supabase (database)  
+• OpenStreetMap (address verification)  
+• Leaflet (map display)  
+• Google Maps (navigation)
+
+---
+
+# Purpose
+
+This app was created to make church van pickups simple, organized, and easy for students and drivers.
