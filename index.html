@@ -51,12 +51,16 @@ placeholder="Your Name"
 required
 >
 
-<input
-type="text"
-id="address"
-placeholder="Street Address"
-required
+<input 
+  type="text"
+  id="address"
+  placeholder="Street Address"
+  autocomplete="street-address"
+  list="addressSuggestions"
+  required
 >
+
+<datalist id="addressSuggestions"></datalist>
 
 <button type="submit">
 Request Pickup
