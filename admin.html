@@ -1,49 +1,47 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>Church Route Builder</title>
+  <title>Church Route Builder</title>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase MUST load before admin.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<style>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
 
-body{
-font-family: Arial;
-padding:20px;
-}
+    #map {
+      height: 500px;
+      margin-bottom: 20px;
+    }
 
-#map{
-height:500px;
-margin-bottom:20px;
-}
-
-button{
-padding:10px 16px;
-font-size:16px;
-}
-
-</style>
-
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+    }
+  </style>
 </head>
+
 <body>
+  <h2>Church Pickup Route Builder</h2>
 
-<h2>Church Pickup Route Builder</h2>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <button onclick="buildRoute()">Build Route</button>
 
-<button onclick="buildRoute()">
-Build Route
-</button>
-
-<script src="admin.js"></script>
-
+  <!-- IMPORTANT: load your script LAST so #map exists -->
+  <script src="admin.js"></script>
 </body>
-
 </html>
