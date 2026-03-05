@@ -32,7 +32,8 @@ async function loadPins(){
 
 const { data } = await db
 .from("pickup_addresses")
-.select("name,address")
+.select("id,name,address")
+.eq("status","pending")
 
 data.forEach(async row=>{
 
@@ -47,9 +48,16 @@ if(!geoData.length) return
 const lat = geoData[0].lat
 const lon = geoData[0].lon
 
-L.marker([lat,lon])
-.addTo(map)
-.bindPopup(`${row.name}<br>${row.address}`)
+const marker =
+L.marker([lat,lon]).addTo(map)
+
+marker.bindPopup(`
+<b>${row.name}</b><br>
+${row.address}<br><br>
+<button onclick="dropOff('${row.id}')">
+Drop Off
+</button>
+`)
 
 })
 
@@ -60,6 +68,7 @@ async function buildRoute(){
 const { data } = await db
 .from("pickup_addresses")
 .select("address")
+.eq("status","pending")
 
 let stops = data.map(x =>
 encodeURIComponent(x.address)
