@@ -1,20 +1,16 @@
 const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
 
-const db = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-)
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const churchLat = 32.9027
 const churchLng = -96.5639
 
 const map = L.map("map").setView([churchLat, churchLng], 12)
 
-L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  { maxZoom: 19 }
-).addTo(map)
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19
+}).addTo(map)
 
 L.marker([churchLat, churchLng])
   .addTo(map)
@@ -27,7 +23,7 @@ loadPins()
 setInterval(loadPins, 10000)
 
 async function loadPins() {
-  // remove old pins
+  // clear old pins
   pinMarkers.forEach(m => map.removeLayer(m))
   pinMarkers = []
 
@@ -40,11 +36,13 @@ async function loadPins() {
     console.error(error)
     return
   }
-
   if (!data) return
 
   data.forEach(row => {
     if (row.lat == null || row.lng == null) return
+
+    // don't pin the church if it somehow exists in table
+    if (Math.abs(row.lat - churchLat) < 0.0001 && Math.abs(row.lng - churchLng) < 0.0001) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
     pinMarkers.push(marker)
@@ -52,9 +50,7 @@ async function loadPins() {
     marker.bindPopup(`
       <b>${row.name}</b><br>
       ${row.address}<br><br>
-      <button onclick="dropOff('${row.id}')">
-        Drop Off
-      </button>
+      <button onclick="dropOff('${row.id}')">Drop Off</button>
     `)
   })
 }
@@ -78,7 +74,7 @@ async function buildRoute() {
 
   const church = `${churchLat},${churchLng}`
 
-  // keep only valid stops, and never include the church as a stop
+  // valid stops only, never include church
   const stops = data.filter(x =>
     x.lat != null &&
     x.lng != null &&
@@ -92,6 +88,7 @@ async function buildRoute() {
 
   const waypoints = stops.map(x => `${x.lat},${x.lng}`).join("|")
 
+  // IMPORTANT: no optimize:true (it causes weird reordering)
   const url =
     `https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=${waypoints}`
 
@@ -101,10 +98,7 @@ async function buildRoute() {
 async function dropOff(id) {
   const { error } = await db
     .from("pickup_addresses")
-    .update({
-      status: "dropped_off",
-      dropped_at: new Date()
-    })
+    .update({ status: "dropped_off", dropped_at: new Date() })
     .eq("id", id)
 
   if (error) {
@@ -113,6 +107,5 @@ async function dropOff(id) {
     return
   }
 
-  // refresh pins
   loadPins()
 }
