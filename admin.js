@@ -26,8 +26,7 @@ let pinMarkers = []
 loadPins()
 setInterval(loadPins, 10000)
 
-async function loadPins(){
-
+async function loadPins() {
   // remove old pins
   pinMarkers.forEach(m => map.removeLayer(m))
   pinMarkers = []
@@ -35,12 +34,16 @@ async function loadPins(){
   const { data, error } = await db
     .from("pickup_addresses")
     .select("id,name,address,lat,lng")
-    .eq("status","pending")
+    .eq("status", "pending")
 
-  if (error || !data) return
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  if (!data) return
 
   data.forEach(row => {
-
     if (row.lat == null || row.lng == null) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
@@ -56,39 +59,60 @@ async function loadPins(){
   })
 }
 
-async function buildRoute(){
-
+async function buildRoute() {
   const { data, error } = await db
     .from("pickup_addresses")
     .select("lat,lng")
-    .eq("status","pending")
+    .eq("status", "pending")
 
-  if(error){
+  if (error) {
     console.error(error)
     alert("Error loading stops")
     return
   }
 
-  if(!data || data.length === 0){
+  if (!data || data.length === 0) {
     alert("No pending stops")
     return
   }
 
-  const churchLat = 32.9027
-  const churchLng = -96.5639
   const church = `${churchLat},${churchLng}`
 
-  // remove any stop that equals the church
-  const stops = data.filter(
-    x => !(Math.abs(x.lat - churchLat) < 0.0001 && Math.abs(x.lng - churchLng) < 0.0001)
+  // keep only valid stops, and never include the church as a stop
+  const stops = data.filter(x =>
+    x.lat != null &&
+    x.lng != null &&
+    !(Math.abs(x.lat - churchLat) < 0.0001 && Math.abs(x.lng - churchLng) < 0.0001)
   )
 
-  const waypoints = stops
-    .map(x => `${x.lat},${x.lng}`)
-    .join("|")
+  if (stops.length === 0) {
+    alert("No valid stops (lat/lng missing)")
+    return
+  }
+
+  const waypoints = stops.map(x => `${x.lat},${x.lng}`).join("|")
 
   const url =
-`https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=${waypoints}`
+    `https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=${waypoints}`
 
   window.open(url, "_blank")
+}
+
+async function dropOff(id) {
+  const { error } = await db
+    .from("pickup_addresses")
+    .update({
+      status: "dropped_off",
+      dropped_at: new Date()
+    })
+    .eq("id", id)
+
+  if (error) {
+    console.error(error)
+    alert("Error updating stop")
+    return
+  }
+
+  // refresh pins
+  loadPins()
 }
