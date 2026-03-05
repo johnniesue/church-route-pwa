@@ -30,41 +30,28 @@ loadPins()
 
 async function loadPins(){
 
-const { data, error } = await db
-.from("pickup_addresses")
-.select("id,name,address")
-.eq("status","pending")
+  const { data, error } = await db
+    .from("pickup_addresses")
+    .select("id,name,address,lat,lng")
+    .eq("status","pending")
 
-if(error || !data) return
+  if (error || !data) return
 
-data.forEach(async row=>{
+  data.forEach(row => {
 
-const geo = await fetch(
-`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(row.address)}`
-)
+    if (row.lat == null || row.lng == null) return
 
-const geoData = await geo.json()
+    const marker = L.marker([row.lat, row.lng]).addTo(map)
 
-if(!geoData.length) return
-
-const lat = geoData[0].lat
-const lon = geoData[0].lon
-
-const marker =
-L.marker([lat,lon]).addTo(map)
-
-marker.bindPopup(`
-<b>${row.name}</b><br>
-${row.address}<br><br>
-<button onclick="dropOff('${row.id}')">
-Drop Off
-</button>
-`)
-
-})
-
+    marker.bindPopup(`
+      <b>${row.name}</b><br>
+      ${row.address}<br><br>
+      <button onclick="dropOff('${row.id}')">
+        Drop Off
+      </button>
+    `)
+  })
 }
-
 async function buildRoute(){
 
 const { data, error } = await db
