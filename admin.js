@@ -30,10 +30,12 @@ loadPins()
 
 async function loadPins(){
 
-const { data } = await db
+const { data, error } = await db
 .from("pickup_addresses")
 .select("id,name,address")
 .eq("status","pending")
+
+if(error || !data) return
 
 data.forEach(async row=>{
 
@@ -65,10 +67,15 @@ Drop Off
 
 async function buildRoute(){
 
-const { data } = await db
+const { data, error } = await db
 .from("pickup_addresses")
 .select("address")
 .eq("status","pending")
+
+if(error || !data || data.length === 0){
+alert("No pending stops")
+return
+}
 
 let stops = data.map(x =>
 encodeURIComponent(x.address)
