@@ -19,6 +19,7 @@ L.marker([churchLat, churchLng])
 let pinMarkers = []
 
 loadPins()
+setInterval(loadPins, 10000)
 
 async function loadPins(){
 
