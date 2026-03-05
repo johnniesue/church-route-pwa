@@ -42,7 +42,7 @@ async function loadPins() {
     if (row.lat == null || row.lng == null) return
 
     // don't pin the church if it somehow exists in table
-    if (Math.abs(row.lat - churchLat) < 0.0001 && Math.abs(row.lng - churchLng) < 0.0001) return
+    if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
     pinMarkers.push(marker)
@@ -53,6 +53,18 @@ async function loadPins() {
       <button onclick="dropOff('${row.id}')">Drop Off</button>
     `)
   })
+}
+
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
 }
 
 async function buildRoute() {
@@ -72,25 +84,42 @@ async function buildRoute() {
     return
   }
 
-  const church = `${churchLat},${churchLng}`
+  // Use the ADDRESS so Google shows "5001 Main St" (not "Village of Rowlett")
+  const churchAddress = "5001 Main St, Rowlett, TX 75088"
+  const origin = encodeURIComponent(churchAddress)
+  const destination = encodeURIComponent(churchAddress)
 
-  // valid stops only, never include church
-  const stops = data.filter(x =>
-    x.lat != null &&
-    x.lng != null &&
-    !(Math.abs(x.lat - churchLat) < 0.0001 && Math.abs(x.lng - churchLng) < 0.0001)
-  )
+  // valid stops only
+  let stops = data
+    .map(x => ({ lat: Number(x.lat), lng: Number(x.lng) }))
+    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+
+  // Remove anything basically at/near the church (prevents church showing as a middle stop)
+  stops = stops.filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
+
+  // Remove duplicates
+  const seen = new Set()
+  stops = stops.filter(x => {
+    const key = `${x.lat.toFixed(6)},${x.lng.toFixed(6)}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
   if (stops.length === 0) {
-    alert("No valid stops (lat/lng missing)")
+    alert("No valid stops")
     return
   }
 
-  const waypoints = stops.map(x => `${x.lat},${x.lng}`).join("|")
+  const waypointString = stops.map(x => `${x.lat},${x.lng}`).join("|")
+  const waypoints = encodeURIComponent(waypointString)
 
-  // IMPORTANT: no optimize:true (it causes weird reordering)
   const url =
-    `https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=${waypoints}`
+    `https://www.google.com/maps/dir/?api=1` +
+    `&origin=${origin}` +
+    `&destination=${destination}` +
+    `&travelmode=driving` +
+    `&waypoints=${waypoints}`
 
   window.open(url, "_blank")
 }
