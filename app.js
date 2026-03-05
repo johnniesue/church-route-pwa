@@ -78,7 +78,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  let lat
+   let lat
   let lng
 
   // if suggestion was selected
@@ -87,16 +87,24 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     lng = parseFloat(selectedSuggestion.lon)
   }
   else{
-
     // fallback geocode if user typed full address
-    const geo = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&limit=1&q=${encodeURIComponent(address)}`
-    )
+    // (NOT bounded; still US-only; tries a couple formats)
+    const q1 = address
+    const q2 = address + ", Rowlett, TX"
+    const queries = [q1, q2]
 
-    const geoData = await geo.json()
+    let geoData = []
 
-    if(!geoData.length){
-      alert("Address not found")
+    for (const q of queries) {
+      const geo = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=3&q=${encodeURIComponent(q)}`
+      )
+      geoData = await geo.json()
+      if (geoData && geoData.length) break
+    }
+
+    if(!geoData || !geoData.length){
+      alert("Address not found. Try selecting from the suggestions.")
       return
     }
 
@@ -137,7 +145,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   alert("Pickup request sent! 🚐")
 
   document.getElementById("pickupForm").reset()
-
+  addressInput.value = ""
   selectedSuggestion = null
   lastResults = []
   suggestionsEl.innerHTML = ""
