@@ -6,6 +6,27 @@ const db = supabase.createClient(
   SUPABASE_KEY
 )
 
+const churchLat = 32.9027
+const churchLng = -96.5639
+
+function distanceMiles(lat1, lng1, lat2, lng2){
+
+const R = 3958.8
+
+const dLat = (lat2-lat1) * Math.PI/180
+const dLng = (lng2-lng1) * Math.PI/180
+
+const a =
+Math.sin(dLat/2) * Math.sin(dLat/2) +
+Math.cos(lat1*Math.PI/180) *
+Math.cos(lat2*Math.PI/180) *
+Math.sin(dLng/2) * Math.sin(dLng/2)
+
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+
+return R * c
+}
+
 document
 .getElementById("pickupForm")
 .addEventListener("submit", async (e) => {
@@ -17,6 +38,32 @@ document.getElementById("name").value
 
 const address =
 document.getElementById("address").value
+
+const geo = await fetch(
+`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+)
+
+const geoData = await geo.json()
+
+if(!geoData.length){
+alert("Address not found")
+return
+}
+
+const lat = parseFloat(geoData[0].lat)
+const lng = parseFloat(geoData[0].lon)
+
+const miles = distanceMiles(
+churchLat,
+churchLng,
+lat,
+lng
+)
+
+if(miles > 10){
+alert("Address must be within 10 miles of the church")
+return
+}
 
 await db
 .from("pickup_addresses")
