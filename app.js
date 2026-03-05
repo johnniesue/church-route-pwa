@@ -13,13 +13,13 @@ function distanceMiles(lat1, lng1, lat2, lng2){
 
 const R = 3958.8
 
-const dLat = (lat2-lat1) * Math.PI/180
-const dLng = (lng2-lng1) * Math.PI/180
+const dLat = (lat2 - lat1) * Math.PI / 180
+const dLng = (lng2 - lng1) * Math.PI / 180
 
 const a =
 Math.sin(dLat/2) * Math.sin(dLat/2) +
-Math.cos(lat1*Math.PI/180) *
-Math.cos(lat2*Math.PI/180) *
+Math.cos(lat1 * Math.PI/180) *
+Math.cos(lat2 * Math.PI/180) *
 Math.sin(dLng/2) * Math.sin(dLng/2)
 
 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
@@ -34,10 +34,15 @@ document
 e.preventDefault()
 
 const name =
-document.getElementById("name").value
+document.getElementById("name").value.trim()
 
 const address =
-document.getElementById("address").value
+document.getElementById("address").value.trim()
+
+if(!name || !address){
+alert("Please enter your name and address")
+return
+}
 
 const geo = await fetch(
 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
@@ -65,6 +70,18 @@ alert("Address must be within 10 miles of the church")
 return
 }
 
+/* prevent duplicate address */
+
+const { data: existing } = await db
+.from("pickup_addresses")
+.select("id")
+.eq("address", address)
+
+if(existing && existing.length > 0){
+alert("This address has already been submitted")
+return
+}
+
 await db
 .from("pickup_addresses")
 .insert([
@@ -74,7 +91,7 @@ address: address
 }
 ])
 
-alert("Pickup request sent!")
+alert("Pickup request sent! 🚐")
 
 document.getElementById("pickupForm").reset()
 
