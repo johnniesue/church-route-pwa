@@ -60,20 +60,27 @@ async function buildRoute(){
 
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("address")
+    .select("lat,lng")
     .eq("status","pending")
 
-  if(error || !data || data.length === 0){
+  if(error){
+    console.error(error)
+    alert("Error loading stops")
+    return
+  }
+
+  if(!data || data.length === 0){
     alert("No pending stops")
     return
   }
 
-  let stops = data.map(x => encodeURIComponent(x.address))
-  let waypoints = stops.join("|")
+  const church = "32.9027,-96.5639"
 
-  let church = encodeURIComponent("5001 Main St, Rowlett, TX 75088")
+  let waypoints = data
+    .map(x => `${x.lat},${x.lng}`)
+    .join("|")
 
-  let url =
+  const url =
 `https://www.google.com/maps/dir/?api=1
 &origin=${church}
 &destination=${church}
@@ -81,17 +88,4 @@ async function buildRoute(){
 &travelmode=driving`
 
   window.open(url)
-}
-
-async function dropOff(id){
-
-  await db
-    .from("pickup_addresses")
-    .update({
-      status: "dropped_off",
-      dropped_at: new Date()
-    })
-    .eq("id", id)
-
-  location.reload()
 }
