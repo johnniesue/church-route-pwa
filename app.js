@@ -78,54 +78,66 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  // REQUIRE they choose from suggestions (verification)
-  if(!selectedSuggestion){
-    alert("Please choose an address from the suggestions list.")
-    return
-  }
+  let lat
+  let lng
 
-  const lat = parseFloat(selectedSuggestion.lat)
-  const lng = parseFloat(selectedSuggestion.lon)
+  // if suggestion was selected
+  if(selectedSuggestion){
+    lat = parseFloat(selectedSuggestion.lat)
+    lng = parseFloat(selectedSuggestion.lon)
+  }
+  else{
+
+    // fallback geocode if user typed full address
+    const geo = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+    )
+
+    const geoData = await geo.json()
+
+    if(!geoData.length){
+      alert("Address not found")
+      return
+    }
+
+    lat = parseFloat(geoData[0].lat)
+    lng = parseFloat(geoData[0].lon)
+  }
 
   // 10-mile check
   const miles = distanceMiles(churchLat, churchLng, lat, lng)
+
   if(miles > 10){
     alert("Address must be within 10 miles of the church")
     return
   }
 
-  // prevent duplicate address
-  const { data: existing, error: existingErr } = await db
+  // prevent duplicate
+  const { data: existing } = await db
     .from("pickup_addresses")
     .select("id")
     .eq("address", address)
-
-  if(existingErr){
-    console.error(existingErr)
-    alert("Error checking address. Please try again.")
-    return
-  }
 
   if(existing && existing.length > 0){
     alert("This address has already been submitted")
     return
   }
 
-  // insert (includes lat/lng for fast admin pins)
-  const { error: insertErr } = await db
+  // insert
+  const { error } = await db
     .from("pickup_addresses")
     .insert([{ name, address, lat, lng }])
 
-  if(insertErr){
-    console.error(insertErr)
-    alert("Error saving pickup request. Please try again.")
+  if(error){
+    console.error(error)
+    alert("Error saving pickup request")
     return
   }
 
   alert("Pickup request sent! 🚐")
+
   document.getElementById("pickupForm").reset()
 
-  // clear suggestion state
   selectedSuggestion = null
   lastResults = []
   suggestionsEl.innerHTML = ""
