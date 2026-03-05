@@ -4,7 +4,15 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const db = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
+
 )
+
+const addressInput = document.getElementById("address")
+const suggestionsEl = document.getElementById("addressSuggestions")
+
+let selectedSuggestion = null
+let lastResults = []
+let suggestTimer = null
 
 const churchLat = 32.9027
 const churchLng = -96.5639
@@ -24,30 +32,60 @@ function distanceMiles(lat1, lng1, lat2, lng2){
   return R * c
 }
 
+/* FREE AUTOCOMPLETE (Nominatim) */
+addressInput.addEventListener("input", () => {
+  selectedSuggestion = null
+
+  const q = addressInput.value.trim()
+  if (q.length < 5) return
+
+  clearTimeout(suggestTimer)
+  suggestTimer = setTimeout(async () => {
+
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5` +
+      `&countrycodes=us&viewbox=${-96.65},${32.98},${-96.45},${32.82}&bounded=1` +
+      `&q=${encodeURIComponent(q)}`
+
+    const res = await fetch(url, { headers: { "Accept": "application/json" } })
+    const data = await res.json()
+
+    lastResults = data
+
+    suggestionsEl.innerHTML = ""
+    data.forEach(item => {
+      const opt = document.createElement("option")
+      opt.value = item.display_name
+      suggestionsEl.appendChild(opt)
+    })
+
+  }, 350)
+})
+
+addressInput.addEventListener("change", () => {
+  const val = addressInput.value.trim()
+  selectedSuggestion = lastResults.find(x => x.display_name === val) || null
+})
+
 document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
   const name = document.getElementById("name").value.trim()
-  const address = document.getElementById("address").value.trim()
+  const address = addressInput.value.trim()
 
   if(!name || !address){
     alert("Please enter your name and address")
     return
   }
 
-  // geocode address
-  const geo = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-  )
-  const geoData = await geo.json()
-
-  if(!geoData.length){
-    alert("Address not found")
+  // REQUIRE they choose from suggestions (verification)
+  if(!selectedSuggestion){
+    alert("Please choose an address from the suggestions list.")
     return
   }
 
-  const lat = parseFloat(geoData[0].lat)
-  const lng = parseFloat(geoData[0].lon)
+  const lat = parseFloat(selectedSuggestion.lat)
+  const lng = parseFloat(selectedSuggestion.lon)
 
   // 10-mile check
   const miles = distanceMiles(churchLat, churchLng, lat, lng)
@@ -86,4 +124,9 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
 
   alert("Pickup request sent! 🚐")
   document.getElementById("pickupForm").reset()
+
+  // clear suggestion state
+  selectedSuggestion = null
+  lastResults = []
+  suggestionsEl.innerHTML = ""
 })
