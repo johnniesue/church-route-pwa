@@ -74,9 +74,16 @@ async function buildRoute(){
     return
   }
 
-  const church = "32.9027,-96.5639"
+  const churchLat = 32.9027
+  const churchLng = -96.5639
+  const church = `${churchLat},${churchLng}`
 
-  let waypoints = data
+  // remove any stop that equals the church
+  const stops = data.filter(
+    x => !(Math.abs(x.lat - churchLat) < 0.0001 && Math.abs(x.lng - churchLng) < 0.0001)
+  )
+
+  const waypoints = stops
     .map(x => `${x.lat},${x.lng}`)
     .join("|")
 
