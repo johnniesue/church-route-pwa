@@ -89,9 +89,9 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   else{
 
     // fallback geocode if user typed full address
-   const geo = await fetch(
-  `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&q=${encodeURIComponent(address)}`
-)
+    const geo = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&limit=1&q=${encodeURIComponent(address)}`
+    )
 
     const geoData = await geo.json()
 
