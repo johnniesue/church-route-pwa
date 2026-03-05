@@ -81,7 +81,7 @@ async function buildRoute(){
     .join("|")
 
   const url =
-`https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=optimize:true|${waypoints}`
+`https://www.google.com/maps/dir/?api=1&origin=${church}&destination=${church}&travelmode=driving&waypoints=${waypoints}`
 
   window.open(url, "_blank")
 }
