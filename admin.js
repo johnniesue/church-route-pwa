@@ -5,6 +5,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 const churchLat = 32.9027
 const churchLng = -96.5639
+const churchAddress = "5001 Main St, Rowlett, TX 75088"
 
 const map = L.map("map").setView([churchLat, churchLng], 12)
 
@@ -29,11 +30,11 @@ async function loadPins() {
 
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("id,name,address,lat,lng")
+    .select("id,name,address,lat,lng,status")
     .eq("status", "pending")
 
   if (error) {
-    console.error(error)
+    console.error("loadPins error:", error)
     return
   }
   if (!data) return
@@ -41,7 +42,7 @@ async function loadPins() {
   data.forEach(row => {
     if (row.lat == null || row.lng == null) return
 
-    // don't pin the church if it somehow exists in table
+    // Don't pin the church if it somehow exists in table
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
@@ -68,13 +69,14 @@ function distanceMiles(lat1, lng1, lat2, lng2) {
 }
 
 async function buildRoute() {
+  // IMPORTANT: use addresses to prevent Google replacing coords with POIs
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("lat,lng")
+    .select("address,lat,lng")
     .eq("status", "pending")
 
   if (error) {
-    console.error(error)
+    console.error("buildRoute error:", error)
     alert("Error loading stops")
     return
   }
@@ -84,23 +86,21 @@ async function buildRoute() {
     return
   }
 
-  // Use the ADDRESS so Google shows "5001 Main St" (not "Village of Rowlett")
-  const churchAddress = "5001 Main St, Rowlett, TX 75088"
-  const origin = encodeURIComponent(churchAddress)
-  const destination = encodeURIComponent(churchAddress)
-
-  // valid stops only
+  // Keep only rows with an address, and exclude anything basically at/near church
   let stops = data
-    .map(x => ({ lat: Number(x.lat), lng: Number(x.lng) }))
+    .map(x => ({
+      address: (x.address || "").trim(),
+      lat: Number(x.lat),
+      lng: Number(x.lng),
+    }))
+    .filter(x => x.address.length > 0)
     .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
 
-  // Remove anything basically at/near the church (prevents church showing as a middle stop)
-  stops = stops.filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-
-  // Remove duplicates
+  // De-dupe by normalized address
   const seen = new Set()
   stops = stops.filter(x => {
-    const key = `${x.lat.toFixed(6)},${x.lng.toFixed(6)}`
+    const key = x.address.toLowerCase().replace(/\s+/g, " ").trim()
     if (seen.has(key)) return false
     seen.add(key)
     return true
@@ -111,7 +111,11 @@ async function buildRoute() {
     return
   }
 
-  const waypointString = stops.map(x => `${x.lat},${x.lng}`).join("|")
+  const origin = encodeURIComponent(churchAddress)
+  const destination = encodeURIComponent(churchAddress)
+
+  // Google expects waypoints separated by | (addresses work best)
+  const waypointString = stops.map(x => x.address).join("|")
   const waypoints = encodeURIComponent(waypointString)
 
   const url =
@@ -131,7 +135,7 @@ async function dropOff(id) {
     .eq("id", id)
 
   if (error) {
-    console.error(error)
+    console.error("dropOff error:", error)
     alert("Error updating stop")
     return
   }
