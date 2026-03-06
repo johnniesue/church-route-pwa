@@ -45,15 +45,18 @@ border-radius:5px;
 <form id="pickupForm">
 
 <input
-type="text"
-id="name"
-placeholder="Your Name"
-required
+  type="text"
+  id="name"
+  name="name"
+  placeholder="Your Name"
+  autocomplete="name"
+  required
 >
 
-<input 
+<input
   type="text"
   id="address"
+  name="address"
   placeholder="Street Address"
   autocomplete="street-address"
   list="addressSuggestions"
@@ -61,7 +64,7 @@ required
 >
 
 <datalist id="addressSuggestions"></datalist>
-
+  
 <button type="submit">
 Request Pickup
 </button>
