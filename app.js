@@ -1,12 +1,3 @@
-const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
-
-const db = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-
-)
-
 const addressInput = document.getElementById("address")
 const suggestionsEl = document.getElementById("addressSuggestions")
 
@@ -16,6 +7,12 @@ let suggestTimer = null
 
 const churchLat = 32.9027
 const churchLng = -96.5639
+
+const NOMINATIM_HEADERS = {
+  "Accept": "application/json",
+  "User-Agent": "church-route-pwa/1.0 (pickup app)",
+  "Referer": window.location.origin
+}
 
 function distanceMiles(lat1, lng1, lat2, lng2){
   const R = 3958.8
@@ -47,7 +44,7 @@ addressInput.addEventListener("input", () => {
       `&countrycodes=us&viewbox=${-96.65},${32.98},${-96.45},${32.82}&bounded=1` +
       `&q=${encodeURIComponent(q)}`
 
-    const res = await fetch(url, { headers: { "Accept": "application/json" } })
+    const res = await fetch(url, { headers: NOMINATIM_HEADERS })
     const data = await res.json()
 
     lastResults = data
@@ -78,7 +75,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     return
   }
 
-   let lat
+  let lat
   let lng
 
   // if suggestion was selected
@@ -97,7 +94,8 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
 
     for (const q of queries) {
       const geo = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=3&q=${encodeURIComponent(q)}`
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=3&q=${encodeURIComponent(q)}`,
+        { headers: NOMINATIM_HEADERS }
       )
       geoData = await geo.json()
       if (geoData && geoData.length) break
