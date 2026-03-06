@@ -1,3 +1,12 @@
+const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
+
+const db = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+
+)
+
 const addressInput = document.getElementById("address")
 const suggestionsEl = document.getElementById("addressSuggestions")
 
@@ -9,9 +18,7 @@ const churchLat = 32.9027
 const churchLng = -96.5639
 
 const NOMINATIM_HEADERS = {
-  "Accept": "application/json",
-  "User-Agent": "church-route-pwa/1.0 (pickup app)",
-  "Referer": window.location.origin
+  "Accept": "application/json"
 }
 
 function distanceMiles(lat1, lng1, lat2, lng2){
@@ -47,10 +54,10 @@ addressInput.addEventListener("input", () => {
     const res = await fetch(url, { headers: NOMINATIM_HEADERS })
     const data = await res.json()
 
-    lastResults = data
+    lastResults = Array.isArray(data) ? data : []
 
     suggestionsEl.innerHTML = ""
-    data.forEach(item => {
+    lastResults.forEach(item => {
       const opt = document.createElement("option")
       opt.value = item.display_name
       suggestionsEl.appendChild(opt)
@@ -85,9 +92,9 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   }
   else{
     // fallback geocode if user typed full address
-    // (NOT bounded; still US-only; tries a couple formats)
+    // try the typed address, then a Rowlett-biased version
     const q1 = address
-    const q2 = address + ", Rowlett, TX"
+    const q2 = `${address}, Rowlett, TX`
     const queries = [q1, q2]
 
     let geoData = []
@@ -97,8 +104,10 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
         `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=3&q=${encodeURIComponent(q)}`,
         { headers: NOMINATIM_HEADERS }
       )
+
       geoData = await geo.json()
-      if (geoData && geoData.length) break
+
+      if (Array.isArray(geoData) && geoData.length) break
     }
 
     if(!geoData || !geoData.length){
