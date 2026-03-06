@@ -125,7 +125,7 @@ async function buildRoute() {
     `&travelmode=driving` +
     `&waypoints=${waypoints}`
 
-  window.open(url, "_blank")
+  window.location.href = url
 }
 
 async function dropOff(id) {
