@@ -150,7 +150,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  alert("Pickup request sent! 🚐")
+  alert("Pickup request sent! 🚐 Please be ready — the van leaves by 7:45.")
 
   document.getElementById("pickupForm").reset()
   addressInput.value = ""
