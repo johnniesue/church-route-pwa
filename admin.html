@@ -2,7 +2,6 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>Church Route Builder</title>
 
   <link
@@ -10,38 +9,167 @@
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
 
-  <!-- Supabase MUST load before admin.js -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     body {
-      font-family: Arial;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f6f8fb;
+      margin: 0;
+      padding: 24px;
+      color: #1f2937;
     }
 
-    #map {
-      height: 500px;
-      margin-bottom: 20px;
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      min-width: 180px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
     }
 
     button {
-      padding: 10px 16px;
-      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .secondary-btn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .secondary-btn:hover {
+      background: #d1d5db;
+    }
+
+    #map {
+      height: 560px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #6b7280;
+      background: white;
+      padding: 14px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 16px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      #map {
+        height: 440px;
+      }
+
+      .stat-card {
+        min-width: 140px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h2>Church Pickup Route Builder</h2>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <h2>Church Pickup Route Builder</h2>
+        <div class="subtitle">Live home drop-off map and route dashboard</div>
+      </div>
+    </div>
 
-  <div id="map"></div>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Pending Pickups</div>
+        <div class="stat-value" id="pickupCount">0</div>
+      </div>
+    </div>
 
-  <button onclick="buildRoute()">Build Route</button>
+    <div class="controls">
+      <button onclick="buildRoute()">Build Route</button>
+      <button class="secondary-btn" onclick="loadPins()">Refresh Stops</button>
+    </div>
 
-  <!-- IMPORTANT: load your script LAST so #map exists -->
+    <div id="map"></div>
+
+    <div class="note">
+      Tip: Click any map pin to see the rider name, address, and the drop-off button.
+    </div>
+  </div>
+
   <script src="admin.js"></script>
 </body>
 </html>
