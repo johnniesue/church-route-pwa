@@ -54,6 +54,7 @@ async function loadPins() {
       <button onclick="dropOff('${row.id}')">Drop Off</button>
     `)
   })
+    document.getElementById("pickupCount").innerText = data.length
 }
 
 function distanceMiles(lat1, lng1, lat2, lng2) {
