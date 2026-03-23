@@ -21,7 +21,12 @@ L.marker([churchLat, churchLng])
 let pinMarkers = []
 
 loadPins()
-setInterval(loadPins, 10000)
+loadPendingPickupCount()
+
+setInterval(() => {
+  loadPins()
+  loadPendingPickupCount()
+}, 10000)
 
 async function loadPins() {
   // clear old pins
@@ -142,4 +147,5 @@ async function dropOff(id) {
   }
 
   loadPins()
+  loadPendingPickupCount()
 }
