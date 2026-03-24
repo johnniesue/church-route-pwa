@@ -50,11 +50,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19
 }).addTo(map)
 
-L.marker([churchLat, churchLng])
-  .addTo(map)
-  .bindPopup("Church")
-  .openPopup()
-
 // ==============================
 // 📦 STATE
 // ==============================
