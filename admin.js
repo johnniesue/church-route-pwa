@@ -69,8 +69,10 @@ loadPins()
 loadPendingPickupCount()
 
 setInterval(() => {
-  loadPins()
-  loadPendingPickupCount()
+  if (!routeMode) {
+    loadPins()
+    loadPendingPickupCount()
+  }
 }, 10000)
 
 
@@ -186,6 +188,8 @@ async function deleteRider(id) {
 async function drawRoute() {
   console.log("DRAW ROUTE CLICKED")
 
+   routeMode = true
+
   const { data, error } = await db
     .from("pickup_addresses")
     .select("lat,lng")
@@ -223,7 +227,7 @@ async function drawRoute() {
   const json = await res.json()
 
   // ✅ optimized order
-  const orderedStops = json.waypoints
+  const orderedStops = json.waypoints.slice(1, -1)
 
   // clear old markers
   pinMarkers.forEach(m => map.removeLayer(m))
