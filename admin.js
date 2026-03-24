@@ -226,8 +226,8 @@ async function drawRoute() {
   const json = await res.json()
 
   // ✅ optimized order
-  const orderedStops = json.waypoints.slice(1, -1)
-
+  const orderedStops = json.waypoints.slice(1)
+  
   // clear old markers
   pinMarkers.forEach(m => map.removeLayer(m))
   pinMarkers = []
