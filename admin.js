@@ -68,8 +68,8 @@ async function loadPins() {
     marker.bindPopup(`
       <b>${row.name}</b><br>
       ${formatAddress(row.address)}<br><br>
-      <button onclick="dropOff('${row.id}')">Drop Off</button>
-      <button onclick="deleteRider('${row.id}')" style="background:red;">Delete</button>
+      <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
+      <button onclick="deleteRider('${row.id}')" style="background:#dc3545;">Delete</button>
     `)
   })
     document.getElementById("pickupCount").innerText = data.length
@@ -134,7 +134,7 @@ async function buildRoute() {
   const destination = encodeURIComponent(churchAddress)
 
   // Google expects waypoints separated by | (addresses work best)
-  const waypointString = stops.map(x => x.address).join("|")
+  const waypointString = "optimize:true|" + stops.map(x => x.address).join("|")
   const waypoints = encodeURIComponent(waypointString)
 
   const url =
