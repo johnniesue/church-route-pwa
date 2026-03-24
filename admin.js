@@ -151,14 +151,24 @@ async function loadPendingPickupCount() {
   if (countEl) countEl.innerText = data?.length ?? 0
 
   if (listEl) {
-    listEl.innerHTML = data && data.length
-      ? data.map(r => `• ${r.name}`).join("<br>")
-      : "No riders"
+    const maxVisible = 6
+
+    if (!data || data.length === 0) {
+      listEl.innerHTML = "No riders"
+    } else {
+      const visible = data.slice(0, maxVisible)
+      const remaining = data.length - maxVisible
+
+      listEl.innerHTML = `
+        <div style="max-height:120px; overflow-y:auto; padding-right:4px;">
+          ${visible.map(r => `• ${r.name}`).join("<br>")}
+          ${remaining > 0 ? `<br>+ ${remaining} more...` : ""}
+        </div>
+      `
+    }
   }
 }
-
-
-// ==============================
+}=========================
 // 🚚 DROP OFF
 // ==============================
 async function dropOff(id) {
