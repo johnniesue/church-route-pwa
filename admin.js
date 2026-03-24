@@ -215,10 +215,9 @@ async function drawRoute() {
     .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
 
   const routeCoords = [
-    `${churchLng},${churchLat}`,
-    ...stops.map(x => `${x.lng},${x.lat}`),
-    `${churchLng},${churchLat}`
-  ].join(";")
+  `${churchLng},${churchLat}`,
+  ...stops.map(x => `${x.lng},${x.lat}`)
+].join(";")
 
   // ✅ FIXED: use TRIP (optimized)
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson`
