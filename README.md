@@ -26,6 +26,32 @@ The system will:
 • Ensure it is within range of the church
 • Save the request instantly
 
+🔄 How Riders Get Added to the Route
+
+When a student submits a pickup request:
+
+• Their name and address are saved instantly
+• Their location is added to the live driver map
+• The request appears in the Pending Drop-offs list
+
+👉 The driver does not need to manually add riders — everything updates automatically.
+
+📍 Real-Time Updates
+
+The route builder updates automatically:
+
+• New riders appear on the map within seconds
+• The rider list updates live
+• The driver always sees the latest route
+
+🚫 Removing a Rider
+
+If a rider needs to be removed:
+
+• The driver clicks the rider’s pin on the map
+• Selects Delete Rider
+• The rider is instantly removed from the route
+
 🧭 Driver Dashboard (Route Builder)
 
 The driver uses the Route Builder dashboard to manage all riders.
