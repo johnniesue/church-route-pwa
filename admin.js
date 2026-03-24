@@ -190,6 +190,20 @@ async function deleteRider(id) {
   loadPendingPickupCount()
 }
 
+// ==============================
+// ⚡ ACTIONS (USER EVENTS)
+// ==============================
+function toggleManualMode() {
+  manualMode = !manualMode
+
+  if (manualMode) {
+    manualOrder = []
+    alert("Manual mode ON: Click stops in order")
+  } else {
+    alert("Manual mode OFF")
+  }
+}
+
 
 // ==============================
 // 🛣️ DRAW ROUTE (MAP)
