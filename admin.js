@@ -69,6 +69,7 @@ async function loadPins() {
       <b>${row.name}</b><br>
       ${formatAddress(row.address)}<br><br>
       <button onclick="dropOff('${row.id}')">Drop Off</button>
+      <button onclick="deleteRider('${row.id}')" style="background:red;">Delete</button>
     `)
   })
     document.getElementById("pickupCount").innerText = data.length
@@ -155,6 +156,25 @@ async function dropOff(id) {
   if (error) {
     console.error("dropOff error:", error)
     alert("Error updating stop")
+    return
+  }
+
+  loadPins()
+  loadPendingPickupCount()
+}
+
+async function deleteRider(id) {
+  const confirmDelete = confirm("Delete this rider?")
+  if (!confirmDelete) return
+
+  const { error } = await db
+    .from("pickup_addresses")
+    .delete()
+    .eq("id", id)
+
+  if (error) {
+    console.error("delete error:", error)
+    alert("Error deleting rider")
     return
   }
 
