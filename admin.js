@@ -104,15 +104,26 @@ async function loadPins() {
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
 
-    // simple clean popup
-    marker.bindPopup(`
-      <b>${row.name}</b><br>
-      ${row.address}
-    `)
+    // hover tooltip instead of click popup
+marker.bindTooltip(`
+  <b>${row.name}</b><br>
+  ${row.address}
+`, {
+  permanent: false,
+  direction: "top",
+  offset: [0, -10]
+})
 
-    pinMarkers.push(marker)
-  })
-}
+// show on hover
+marker.on("mouseover", function () {
+  this.openTooltip()
+})
+
+marker.on("mouseout", function () {
+  this.closeTooltip()
+})
+
+pinMarkers.push(marker)
 
 // ==============================
 // 🔢 COUNT
