@@ -135,9 +135,9 @@ marker.bindPopup(`
 // 🔢 COUNT
 // ==============================
 async function loadPendingPickupCount() {
-  const { count, error } = await db
+  const { data, error } = await db
     .from("pickup_addresses")
-    .select("*", { count: "exact", head: true })
+    .select("name")
     .eq("status", "pending")
 
   if (error) {
@@ -145,8 +145,16 @@ async function loadPendingPickupCount() {
     return
   }
 
-  const el = document.getElementById("pickupCount")
-  if (el) el.innerText = count ?? 0
+  const countEl = document.getElementById("pickupCount")
+  const listEl = document.getElementById("pickupList")
+
+  if (countEl) countEl.innerText = data?.length ?? 0
+
+  if (listEl) {
+    listEl.innerHTML = data && data.length
+      ? data.map(r => `• ${r.name}`).join("<br>")
+      : "No riders"
+  }
 }
 
 
