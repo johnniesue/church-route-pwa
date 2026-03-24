@@ -315,3 +315,32 @@ async function drawRoute() {
 }
 
 
+// ==============================
+// 🌍 OPEN IN GOOGLE MAPS
+// ==============================
+async function openInGoogle() {
+  const { data } = await db
+    .from("pickup_addresses")
+    .select("address")
+    .eq("status", "pending")
+
+  if (!data || data.length === 0) {
+    alert("No stops")
+    return
+  }
+
+  const stops = data
+    .map(x => x.address?.trim())
+    .filter(x => x && x.length > 0)
+
+  const waypoints = stops.join("|")
+
+  const url =
+    "https://www.google.com/maps/dir/?api=1" +
+    `&origin=${encodeURIComponent(churchAddress)}` +
+    `&destination=${encodeURIComponent(churchAddress)}` +
+    `&travelmode=driving` +
+    `&waypoints=${encodeURIComponent(waypoints)}`
+
+  window.open(url, "_blank")
+}
