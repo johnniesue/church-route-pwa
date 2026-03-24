@@ -35,6 +35,13 @@ function distanceMiles(lat1, lng1, lat2, lng2) {
 }
 
 // ==============================
+// ⛪ CHURCH LOCATION
+// ==============================
+const churchLat = 32.9027
+const churchLng = -96.5639
+const churchAddress = "5001 Main St, Rowlett, TX 75088"
+
+// ==============================
 // 🗺️ MAP INIT
 // ==============================
 const map = L.map("map").setView([churchLat, churchLng], 12)
