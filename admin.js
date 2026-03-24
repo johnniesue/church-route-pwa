@@ -113,10 +113,28 @@ async function loadPins() {
       }
     })
 
-    // popup (FIXED)
-   marker.bindPopup(`
-     <b>${row.name}</b><br>
-     ${formatAddress(row.address)}<br><br>
+    // popup 
+  const label = L.marker([row.lat, row.lng], {
+  icon: L.divIcon({
+    className: "label-marker",
+    html: `
+      <div style="
+        background:white;
+        padding:6px 8px;
+        border-radius:6px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.2);
+        font-size:12px;
+        line-height:1.3;
+        max-width:160px;
+      ">
+        <b>${row.name}</b><br>
+        ${row.address}
+      </div>
+    `
+  })
+}).addTo(map)
+
+pinMarkers.push(label)
 
      <button onclick="deleteRider('${row.id}')"
       style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
