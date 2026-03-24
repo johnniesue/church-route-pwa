@@ -221,7 +221,6 @@ async function drawRoute() {
 
   // ✅ FIXED: use TRIP (optimized)
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
-
   const res = await fetch(url)
   const json = await res.json()
 
