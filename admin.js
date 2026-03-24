@@ -104,26 +104,15 @@ async function loadPins() {
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
 
-    // hover tooltip instead of click popup
-marker.bindTooltip(`
-  <b>${row.name}</b><br>
-  ${row.address}
-`, {
-  permanent: false,
-  direction: "top",
-  offset: [0, -10]
-})
+    marker.bindPopup(`
+      <b>${row.name}</b><br>
+      ${row.address}
+    `)
 
-// show on hover
-marker.on("mouseover", function () {
-  this.openTooltip()
-})
+    pinMarkers.push(marker)
+  })
 
-marker.on("mouseout", function () {
-  this.closeTooltip()
-})
-
-pinMarkers.push(marker)
+} 
 
 // ==============================
 // 🔢 COUNT
@@ -185,21 +174,6 @@ async function deleteRider(id) {
   loadPins()
   loadPendingPickupCount()
 }
-
-// ==============================
-// ⚡ ACTIONS (USER EVENTS)
-// ==============================
-function toggleManualMode() {
-  manualMode = !manualMode
-
-  if (manualMode) {
-    manualOrder = []
-    alert("Manual mode ON: Click stops in order")
-  } else {
-    alert("Manual mode OFF")
-  }
-}
-
 
 // ==============================
 // 🛣️ DRAW ROUTE (MAP)
