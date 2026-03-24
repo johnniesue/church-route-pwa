@@ -99,14 +99,6 @@ async function loadPins() {
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
 
-    // hover (info)
-marker.bindTooltip(
-  `<b>${row.name}</b><br>${row.address}`,
-  {
-    direction: "top",
-    offset: [0, -10]
-  }
-)
 
 // click (delete button)
 marker.bindPopup(`
