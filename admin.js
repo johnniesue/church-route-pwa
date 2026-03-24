@@ -214,7 +214,7 @@ async function drawRoute() {
 
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("lat,lng")
+    .select("id,name,address,lat,lng")
     .eq("status", "pending")
 
   if (error) {
