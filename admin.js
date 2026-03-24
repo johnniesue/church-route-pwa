@@ -71,9 +71,25 @@ async function loadPins() {
       <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
       <button onclick="deleteRider('${row.id}')" style="background:#dc3545;color:white;padding:8px;">DELETE</button>
     `)
-  })
     document.getElementById("pickupCount").innerText = data.length
+  })
 }
+
+async function loadPendingPickupCount() {
+  const { count, error } = await db
+    .from("pickup_addresses")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending")
+
+  if (error) {
+    console.error("pending count error:", error)
+    return
+  }
+
+  const el = document.getElementById("pickupCount")
+  if (el) el.innerText = count ?? 0
+}
+
 
 function distanceMiles(lat1, lng1, lat2, lng2) {
   const R = 3958.8
