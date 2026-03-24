@@ -7,6 +7,16 @@ const churchLat = 32.9027
 const churchLng = -96.5639
 const churchAddress = "5001 Main St, Rowlett, TX 75088"
 
+function formatAddress(address) {
+  const parts = address.split(',')
+
+  const line1 = parts[0]?.trim() || ''
+  const city = parts[1]?.trim() || ''
+  const state = parts[2]?.trim() || ''
+
+  return `${line1}<br>${city}, ${state}`
+}
+
 const map = L.map("map").setView([churchLat, churchLng], 12)
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -17,6 +27,8 @@ L.marker([churchLat, churchLng])
   .addTo(map)
   .bindPopup("Church")
   .openPopup()
+
+
 
 let pinMarkers = []
 
@@ -55,7 +67,7 @@ async function loadPins() {
 
     marker.bindPopup(`
       <b>${row.name}</b><br>
-      ${row.address}<br><br>
+      ${formatAddress(row.address)}<br><br>
       <button onclick="dropOff('${row.id}')">Drop Off</button>
     `)
   })
