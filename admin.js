@@ -303,32 +303,3 @@ async function drawRoute() {
 }
 
 
-// ==============================
-// 🌍 OPEN IN GOOGLE MAPS (FIXED)
-// ==============================
-async function openInGoogle() {
-  const { data } = await db
-    .from("pickup_addresses")
-    .select("lat,lng")
-    .eq("status", "pending")
-
-  if (!data || data.length === 0) {
-    alert("No stops")
-    return
-  }
-
-  const stops = data
-    .map(x => `${x.lat},${x.lng}`)
-    .filter(x => x)
-
-  const waypointString = stops.join("|")
-
-  const url =
-    `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${churchLat},${churchLng}` +
-    `&destination=${churchLat},${churchLng}` +
-    `&travelmode=driving` +
-    `&waypoints=${waypointString}`
-
-  window.open(url, "_blank")
-}
