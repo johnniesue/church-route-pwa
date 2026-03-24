@@ -150,7 +150,7 @@ async function buildRoute() {
   const destination = encodeURIComponent(churchAddress)
 
   // Google expects waypoints separated by | (addresses work best)
-  const waypointString = "optimize:true|" + stops.map(x => `place_id:${x.lat},${x.lng}`).join("|")
+  const waypointString = stops.map(x => x.address).join("|")
   const waypoints = encodeURIComponent(waypointString)
 
   const url =
