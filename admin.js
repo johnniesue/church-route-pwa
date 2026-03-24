@@ -58,7 +58,8 @@ L.marker([churchLat, churchLng])
 // ==============================
 // 📦 STATE
 // ==============================
-let routeMode = false
+let manualOrder = []
+let manualMode = false
 let pinMarkers = []
 let routeLine = null
 
@@ -100,25 +101,29 @@ async function loadPins() {
 
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
-    const marker = L.marker([row.lat, row.lng]).addTo(map)
-    pinMarkers.push(marker)
+   const marker = L.marker([row.lat, row.lng]).addTo(map)
+pinMarkers.push(marker)
 
-    marker.bindPopup(`
-      <b>${row.name}</b><br>
-      ${formatAddress(row.address)}<br><br>
+// manual route click
+marker.on("click", () => {
+  if (manualMode) {
+    manualOrder.push({ lat: row.lat, lng: row.lng })
+    alert(`Added stop #${manualOrder.length}`)
+  }
+})
 
-      <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
+// popup (THIS was broken before — now fixed)
+marker.bindPopup(`
+  <b>${row.name}</b><br>
+  ${formatAddress(row.address)}<br><br>
 
-      <button onclick="deleteRider('${row.id}')" 
-        style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
-        Delete
-      </button>
-    `)
-  })
+  <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
 
-  document.getElementById("pickupCount").innerText = data.length
-}
-
+  <button onclick="deleteRider('${row.id}')"
+    style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
+    Delete
+  </button>
+`)
 
 // ==============================
 // 🔢 COUNT
