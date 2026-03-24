@@ -102,17 +102,34 @@ async function loadPins() {
 
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
+    // ✅ 1. NORMAL PIN
     const marker = L.marker([row.lat, row.lng]).addTo(map)
-
-    marker.bindPopup(`
-      <b>${row.name}</b><br>
-      ${row.address}
-    `)
-
     pinMarkers.push(marker)
-  })
 
-} 
+    // ✅ 2. ALWAYS-VISIBLE LABEL
+    const label = L.marker([row.lat, row.lng], {
+      icon: L.divIcon({
+        className: "label-marker",
+        html: `
+          <div style="
+            background:white;
+            padding:6px 8px;
+            border-radius:6px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.2);
+            font-size:12px;
+            line-height:1.3;
+            max-width:160px;
+          ">
+            <b>${row.name}</b><br>
+            ${row.address}
+          </div>
+        `
+      })
+    }).addTo(map)
+
+    pinMarkers.push(label)
+  })
+}
 
 // ==============================
 // 🔢 COUNT
