@@ -125,7 +125,8 @@ async function loadPins() {
       Delete
     </button>
   `)
-
+})
+}
 
 // ==============================
 // 🔢 COUNT
