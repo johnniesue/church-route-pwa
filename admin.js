@@ -1,12 +1,14 @@
+// ==============================
+// 🔧 CONFIG / SETUP
+// ==============================
 const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-const churchLat = 32.9027
-const churchLng = -96.5639
-const churchAddress = "5001 Main St, Rowlett, TX 75088"
-
+// ==============================
+// 🧱 HELPERS
+// ==============================
 function formatAddress(address) {
   const parts = address.split(',')
 
@@ -17,6 +19,24 @@ function formatAddress(address) {
   return `${line1}<br>${city}, ${state}`
 }
 
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3958.8
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) ** 2
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+// ==============================
+// 🗺️ MAP INIT
+// ==============================
 const map = L.map("map").setView([churchLat, churchLng], 12)
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -28,11 +48,15 @@ L.marker([churchLat, churchLng])
   .bindPopup("Church")
   .openPopup()
 
-
-
+// ==============================
+// 📦 STATE
+// ==============================
 let pinMarkers = []
 let routeLine = null
 
+// ==============================
+// 🔄 INITIAL LOAD
+// ==============================
 loadPins()
 loadPendingPickupCount()
 
@@ -41,8 +65,11 @@ setInterval(() => {
   loadPendingPickupCount()
 }, 10000)
 
+
+// ==============================
+// 📍 LOAD PINS
+// ==============================
 async function loadPins() {
-  // clear old pins
   pinMarkers.forEach(m => map.removeLayer(m))
   pinMarkers = []
 
@@ -55,12 +82,12 @@ async function loadPins() {
     console.error("loadPins error:", error)
     return
   }
+
   if (!data) return
 
   data.forEach(row => {
     if (row.lat == null || row.lng == null) return
 
-    // Don't pin the church if it somehow exists in table
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
@@ -69,13 +96,23 @@ async function loadPins() {
     marker.bindPopup(`
       <b>${row.name}</b><br>
       ${formatAddress(row.address)}<br><br>
+
       <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
-      <button onclick="deleteRider('${row.id}')" style="background:#dc3545;color:white;padding:8px;">DELETE</button>
+
+      <button onclick="deleteRider('${row.id}')" 
+        style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
+        DELETE
+      </button>
     `)
-    document.getElementById("pickupCount").innerText = data.length
   })
+
+  document.getElementById("pickupCount").innerText = data.length
 }
 
+
+// ==============================
+// 🔢 COUNT
+// ==============================
 async function loadPendingPickupCount() {
   const { count, error } = await db
     .from("pickup_addresses")
@@ -92,78 +129,9 @@ async function loadPendingPickupCount() {
 }
 
 
-function distanceMiles(lat1, lng1, lat2, lng2) {
-  const R = 3958.8
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
-}
-
-async function buildRoute() {
-  // IMPORTANT: use addresses to prevent Google replacing coords with POIs
-  const { data, error } = await db
-    .from("pickup_addresses")
-    .select("address,lat,lng")
-    .eq("status", "pending")
-
-  if (error) {
-    console.error("buildRoute error:", error)
-    alert("Error loading stops")
-    return
-  }
-
-  if (!data || data.length === 0) {
-    alert("No pending stops")
-    return
-  }
-
-  // Keep only rows with an address, and exclude anything basically at/near church
-  let stops = data
-    .map(x => ({
-      address: (x.address || "").trim(),
-      lat: Number(x.lat),
-      lng: Number(x.lng),
-    }))
-    .filter(x => x.address.length > 0)
-    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
-    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-
-  // De-dupe by normalized address
-  const seen = new Set()
-  stops = stops.filter(x => {
-    const key = x.address.toLowerCase().replace(/\s+/g, " ").trim()
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-
-  if (stops.length === 0) {
-    alert("No valid stops")
-    return
-  }
-
-  const origin = encodeURIComponent(churchAddress)
-  const destination = encodeURIComponent(churchAddress)
-
-  // Google expects waypoints separated by | (addresses work best)
-  const waypointString = stops.map(x => x.address).join("|")
-  const waypoints = encodeURIComponent(waypointString)
-
-  const url =
-    `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${origin}` +
-    `&destination=${destination}` +
-    `&travelmode=driving` +
-    `&waypoints=${waypoints}`
-
-  window.location.href = url
-}
-
+// ==============================
+// 🚚 DROP OFF
+// ==============================
 async function dropOff(id) {
   const { error } = await db
     .from("pickup_addresses")
@@ -180,6 +148,10 @@ async function dropOff(id) {
   loadPendingPickupCount()
 }
 
+
+// ==============================
+// ❌ DELETE RIDER
+// ==============================
 async function deleteRider(id) {
   const confirmDelete = confirm("Delete this rider?")
   if (!confirmDelete) return
@@ -195,9 +167,17 @@ async function deleteRider(id) {
     return
   }
 
-  async function drawRoute() {
-    console.log("DRAW ROUTE CLICKED")
-    
+  loadPins()
+  loadPendingPickupCount()
+}
+
+
+// ==============================
+// 🛣️ DRAW ROUTE (MAP)
+// ==============================
+async function drawRoute() {
+  console.log("DRAW ROUTE CLICKED")
+
   const { data, error } = await db
     .from("pickup_addresses")
     .select("lat,lng")
@@ -221,11 +201,6 @@ async function deleteRider(id) {
     }))
     .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
     .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-
-  if (stops.length === 0) {
-    alert("No valid stops")
-    return
-  }
 
   const routeCoords = [
     `${churchLng},${churchLat}`,
@@ -255,8 +230,4 @@ async function deleteRider(id) {
   }).addTo(map)
 
   map.fitBounds(routeLine.getBounds(), { padding: [30, 30] })
-}
-
-  loadPins()
-  loadPendingPickupCount()
 }
