@@ -207,17 +207,17 @@ async function drawRoute() {
   }
 
   const stops = data
-    .map(x => ({
-      lat: Number(x.lat),
-      lng: Number(x.lng)
-    }))
-    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
-    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-
-  const routeCoords = [
-  `${churchLng},${churchLat}`,
-  ...stops.map(x => `${x.lng},${x.lat}`)
-].join(";")
+  .map(x => ({
+    lat: Number(x.lat),
+    lng: Number(x.lng)
+  }))
+  .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+  .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
+  .sort((a, b) => {
+    const da = distanceMiles(churchLat, churchLng, a.lat, a.lng)
+    const db = distanceMiles(churchLat, churchLng, b.lat, b.lng)
+    return da - db
+  })
 
   // ✅ FIXED: use TRIP (optimized)
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
