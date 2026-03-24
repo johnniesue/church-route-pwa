@@ -118,8 +118,6 @@ async function loadPins() {
      <b>${row.name}</b><br>
      ${formatAddress(row.address)}<br><br>
 
-     <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
-
      <button onclick="deleteRider('${row.id}')"
       style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
       Delete
