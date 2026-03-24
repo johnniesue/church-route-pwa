@@ -304,12 +304,12 @@ async function drawRoute() {
 
 
 // ==============================
-// 🌍 OPEN IN GOOGLE MAPS
+// 🌍 OPEN IN GOOGLE MAPS (FIXED)
 // ==============================
 async function openInGoogle() {
   const { data } = await db
     .from("pickup_addresses")
-    .select("address")
+    .select("lat,lng")
     .eq("status", "pending")
 
   if (!data || data.length === 0) {
@@ -318,17 +318,17 @@ async function openInGoogle() {
   }
 
   const stops = data
-    .map(x => x.address?.trim())
-    .filter(x => x && x.length > 0)
+    .map(x => `${x.lat},${x.lng}`)
+    .filter(x => x)
 
   const waypointString = stops.join("|")
 
   const url =
     `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${encodeURIComponent(churchAddress)}` +
-    `&destination=${encodeURIComponent(churchAddress)}` +
+    `&origin=${churchLat},${churchLng}` +
+    `&destination=${churchLat},${churchLng}` +
     `&travelmode=driving` +
-    `&waypoints=${encodeURIComponent(waypointString)}`
+    `&waypoints=${waypointString}`
 
   window.open(url, "_blank")
 }
