@@ -344,15 +344,16 @@ async function openInGoogle() {
 }
 
 function showHelp() {
-  alert(
-`HOW TO USE:
+ alert(`
+HOW TO USE:
 
+• Riders are added automatically when they scan Qr code to request a drop-off
 • Hover over pins to see rider name and address
 • Click a pin to delete a rider if needed
 • Click "Open in Google" to build your route
 • Adjust the route in Google Maps as needed
 
 TIP:
-Always verify your route in Google before driving.`
-  )
+Always verify your route in Google before driving.
+`)
 }
