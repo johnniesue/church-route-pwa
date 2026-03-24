@@ -235,7 +235,12 @@ async function drawRoute() {
     .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
     .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
 
-  // ✅ IMPORTANT: DO NOT pre-sort (let OSRM optimize)
+  if (stops.length === 0) {
+    alert("No valid stops after filtering")
+    return
+  }
+
+  // ✅ DO NOT pre-sort (let OSRM optimize)
   const routeCoords = [
     `${churchLng},${churchLat}`,
     ...stops.map(x => `${x.lng},${x.lat}`)
@@ -243,10 +248,18 @@ async function drawRoute() {
 
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
 
-  const res = await fetch(url)
-  const json = await res.json()
+  let json
+  try {
+    const res = await fetch(url)
+    json = await res.json()
+  } catch (err) {
+    console.error("Route fetch failed:", err)
+    alert("Failed to fetch route")
+    return
+  }
 
   if (!json.trips || !json.trips.length) {
+    console.error("OSRM response:", json)
     alert("No route found")
     return
   }
