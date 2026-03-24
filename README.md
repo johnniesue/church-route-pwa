@@ -1,89 +1,77 @@
-# Church Pickup 🚐
+🚐 Church Pickup & Drop-off Route System
 
-This app allows students to request a ride to church using their phone.
+This app allows students to request a ride to church and provides drivers with a simple tool to manage and route pickups efficiently.
 
-Simply scan the QR code and submit your pickup request.
-
----
-
-# How It Works
-
-### 1️⃣ Scan the QR Code
+📱 How It Works (Students)
+1️⃣ Scan the QR Code
 
 Students scan the church pickup QR code using their phone camera.
 
-This opens the pickup request page.
+2️⃣ Enter Information
 
----
+Fill out:
 
-### 2️⃣ Enter Your Information
+• Name
+• Home address
 
-Fill out the form:
+Addresses are validated and suggested automatically.
 
-• Your name  
-• Your home address
+3️⃣ Submit Request
 
-As you type your address, the app will suggest verified addresses.
-
-Select the correct address from the list.
-
----
-
-### 3️⃣ Request Pickup
-
-Tap **Request Pickup**.
+Tap Request Pickup.
 
 The system will:
 
-• Verify the address  
-• Confirm the home is within 10 miles of the church  
-• Save the pickup request
+• Verify the address
+• Ensure it is within range of the church
+• Save the request instantly
 
----
+🧭 Driver Dashboard (Route Builder)
 
-# What Happens Next
+The driver uses the Route Builder dashboard to manage all riders.
 
-Your pickup location is added to the driver's route.
+📍 What the Driver Sees
 
-The driver can see:
+• All riders displayed as pins on a map
+• Hover over a pin → see rider name & address
+• Click a pin → option to delete rider if needed
 
-• Your name  
-• Your location on the map  
-• The best route to pick everyone up
+📊 Pending Drop-offs Panel
 
----
+The dashboard shows:
 
-# Pickup Route
+• Total number of riders
+• A scrollable list of rider names
+• Automatically updates in real-time
 
-The driver uses a route builder that:
+🚗 Routing
 
-• Shows all pickup locations on a map  
-• Optimizes the route automatically  
-• Provides turn-by-turn navigation
+Drivers click “Open in Google” to:
 
-The route always starts and ends at the church.
+• Send all stops directly to Google Maps
+• Automatically build a route
+• Adjust and optimize as needed
 
----
+👉 Google Maps is used for final navigation and route control.
 
-# Important Notes
+⚠️ Important Notes
 
-• Only submit one pickup request per house.  
-• Make sure your address is correct.  
-• Be ready outside when the church van arrives.
+• One request per household
+• Address must be accurate
+• Riders should be ready outside
 
----
+🧱 Technology
 
-# Technology
+• Supabase — database
+• OpenStreetMap — address lookup
+• Leaflet — live map display
+• Google Maps — route navigation
 
-This system uses:
+🎯 Purpose
 
-• Supabase (database)  
-• OpenStreetMap (address verification)  
-• Leaflet (map display)  
-• Google Maps (navigation)
+This system is designed to:
 
----
-
-# Purpose
-
-This app was created to make church van pickups simple, organized, and easy for students and drivers.
+• Simplify church transportation
+• Give drivers full control of routing
+• Provide clear visibility of all riders
+• Reduce confusion and manual coordination
