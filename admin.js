@@ -215,12 +215,50 @@ async function drawRoute() {
     `${churchLng},${churchLat}`
   ].join(";")
 
-  const url = `https://router.project-osrm.org/route/v1/driving/${routeCoords}?overview=full&geometries=geojson`
+  // ✅ FIXED: use TRIP (optimized)
+  const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson`
 
   const res = await fetch(url)
   const json = await res.json()
 
-  if (!json.routes || !json.routes.length) {
+  // ✅ optimized order
+  const orderedStops = json.waypoints
+
+  // clear old markers
+  pinMarkers.forEach(m => map.removeLayer(m))
+  pinMarkers = []
+
+  // ✅ numbered markers
+  orderedStops.forEach((wp, index) => {
+    const lat = wp.location[1]
+    const lng = wp.location[0]
+
+    const marker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: "custom-marker",
+        html: `
+          <div style="
+            background:#2563eb;
+            color:white;
+            border-radius:50%;
+            width:28px;
+            height:28px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+          ">
+            ${index + 1}
+          </div>
+        `
+      })
+    }).addTo(map)
+
+    pinMarkers.push(marker)
+  })
+
+  // ✅ FIXED: use trips instead of routes
+  if (!json.trips || !json.trips.length) {
     alert("No route found")
     return
   }
@@ -229,7 +267,7 @@ async function drawRoute() {
     map.removeLayer(routeLine)
   }
 
-  routeLine = L.geoJSON(json.routes[0].geometry, {
+  routeLine = L.geoJSON(json.trips[0].geometry, {
     style: {
       color: "blue",
       weight: 4
