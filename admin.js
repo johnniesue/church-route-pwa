@@ -219,6 +219,11 @@ async function drawRoute() {
     return da - db
   })
 
+  const routeCoords = [
+  `${churchLng},${churchLat}`,
+  ...stops.map(x => `${x.lng},${x.lat}`)
+].join(";")
+  
   // ✅ FIXED: use TRIP (optimized)
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
   const res = await fetch(url)
