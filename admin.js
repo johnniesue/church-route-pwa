@@ -342,3 +342,17 @@ async function openInGoogle() {
 
   window.open(url, "_blank")
 }
+
+function showHelp() {
+  alert(
+`HOW TO USE:
+
+• Hover over pins to see rider name and address
+• Click a pin to delete a rider if needed
+• Click "Open in Google" to build your route
+• Adjust the route in Google Maps as needed
+
+TIP:
+Always verify your route in Google before driving.`
+  )
+}
