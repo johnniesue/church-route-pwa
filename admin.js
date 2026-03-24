@@ -196,6 +196,8 @@ async function deleteRider(id) {
   }
 
   async function drawRoute() {
+    console.log("DRAW ROUTE CLICKED")
+    
   const { data, error } = await db
     .from("pickup_addresses")
     .select("lat,lng")
