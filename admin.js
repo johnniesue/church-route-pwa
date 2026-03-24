@@ -60,6 +60,7 @@ L.marker([churchLat, churchLng])
 // ==============================
 let manualOrder = []
 let manualMode = false
+let routeMode = false   
 let pinMarkers = []
 let routeLine = null
 
@@ -101,31 +102,33 @@ async function loadPins() {
 
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
-   const marker = L.marker([row.lat, row.lng]).addTo(map)
-pinMarkers.push(marker)
+    const marker = L.marker([row.lat, row.lng]).addTo(map)
+    pinMarkers.push(marker)
 
-// manual route click
-marker.on("click", () => {
-  if (manualMode) {
-    manualOrder.push({ lat: row.lat, lng: row.lng })
-    alert(`Added stop #${manualOrder.length}`)
-  }
-})
+    // manual route click
+    marker.on("click", () => {
+      if (manualMode) {
+        manualOrder.push({ lat: row.lat, lng: row.lng })
+        alert(`Added stop #${manualOrder.length}`)
+      }
+    })
 
-// popup (THIS was broken before — now fixed)
-marker.bindPopup(`
-  <b>${row.name}</b><br>
-  ${formatAddress(row.address)}<br><br>
+    // popup (FIXED)
+    marker.bindPopup(`
+      <b>${row.name}</b><br>
+      ${formatAddress(row.address)}<br><br>
 
-  <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
+      <button onclick="dropOff('${row.id}')">Drop Off</button><br><br>
 
-  <button onclick="deleteRider('${row.id}')"
-    style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
-    Delete
-  </button>
-`)
-})
-  
+      <button onclick="deleteRider('${row.id}')"
+        style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
+        Delete
+      </button>
+    `)
+  })
+}
+
+
 // ==============================
 // 🔢 COUNT
 // ==============================
@@ -194,7 +197,7 @@ async function deleteRider(id) {
 async function drawRoute() {
   console.log("DRAW ROUTE CLICKED")
 
-   routeMode = true
+  routeMode = true
 
   const { data, error } = await db
     .from("pickup_addresses")
@@ -213,36 +216,36 @@ async function drawRoute() {
   }
 
   const stops = data
-  .map(x => ({
-    lat: Number(x.lat),
-    lng: Number(x.lng)
-  }))
-  .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
-  .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-  .sort((a, b) => {
-    const da = distanceMiles(churchLat, churchLng, a.lat, a.lng)
-    const db = distanceMiles(churchLat, churchLng, b.lat, b.lng)
-    return da - db
-  })
+    .map(x => ({
+      lat: Number(x.lat),
+      lng: Number(x.lng)
+    }))
+    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
 
+  // ✅ IMPORTANT: DO NOT pre-sort (let OSRM optimize)
   const routeCoords = [
-  `${churchLng},${churchLat}`,
-  ...stops.map(x => `${x.lng},${x.lat}`)
-].join(";")
-  
-  // ✅ FIXED: use TRIP (optimized)
+    `${churchLng},${churchLat}`,
+    ...stops.map(x => `${x.lng},${x.lat}`)
+  ].join(";")
+
   const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
+
   const res = await fetch(url)
   const json = await res.json()
 
-  // ✅ optimized order
+  if (!json.trips || !json.trips.length) {
+    alert("No route found")
+    return
+  }
+
   const orderedStops = json.waypoints.slice(1)
-  
-  // clear old markers
+
+  // clear markers
   pinMarkers.forEach(m => map.removeLayer(m))
   pinMarkers = []
 
-  // ✅ numbered markers
+  // numbered markers
   orderedStops.forEach((wp, index) => {
     const lat = wp.location[1]
     const lng = wp.location[0]
@@ -270,12 +273,6 @@ async function drawRoute() {
 
     pinMarkers.push(marker)
   })
-
-  // ✅ FIXED: use trips instead of routes
-  if (!json.trips || !json.trips.length) {
-    alert("No route found")
-    return
-  }
 
   if (routeLine) {
     map.removeLayer(routeLine)
