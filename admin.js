@@ -102,30 +102,15 @@ async function loadPins() {
 
     if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
-    // 📍 Base pin
     const marker = L.marker([row.lat, row.lng]).addTo(map)
+
+    // simple clean popup
+    marker.bindPopup(`
+      <b>${row.name}</b><br>
+      ${row.address}
+    `)
+
     pinMarkers.push(marker)
-
-    // 🏷️ Always-visible label (name + address)
-    const label = L.marker([row.lat, row.lng], {
-      icon: L.divIcon({
-        className: "label-marker",
-        html: `
-          <div style="
-          background:white;
-          padding:4px 6px;
-          border-radius:4px;
-          box-shadow:0 1px 4px rgba(0,0,0,0.2);
-          font-size:11px;
-          white-space:nowrap;
-        ">
-          ${row.name}
-        </div>
-        `
-      })
-    }).addTo(map)
-
-    pinMarkers.push(label)
   })
 }
 
