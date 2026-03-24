@@ -58,6 +58,7 @@ L.marker([churchLat, churchLng])
 // ==============================
 // 📦 STATE
 // ==============================
+let routeMode = false
 let pinMarkers = []
 let routeLine = null
 
