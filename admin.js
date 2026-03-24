@@ -31,6 +31,7 @@ L.marker([churchLat, churchLng])
 
 
 let pinMarkers = []
+let routeLine = null
 
 loadPins()
 loadPendingPickupCount()
@@ -193,6 +194,66 @@ async function deleteRider(id) {
     alert("Error deleting rider")
     return
   }
+
+  async function drawRoute() {
+  const { data, error } = await db
+    .from("pickup_addresses")
+    .select("lat,lng")
+    .eq("status", "pending")
+
+  if (error) {
+    console.error("drawRoute error:", error)
+    alert("Error loading route stops")
+    return
+  }
+
+  if (!data || data.length === 0) {
+    alert("No pending stops")
+    return
+  }
+
+  const stops = data
+    .map(x => ({
+      lat: Number(x.lat),
+      lng: Number(x.lng)
+    }))
+    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
+
+  if (stops.length === 0) {
+    alert("No valid stops")
+    return
+  }
+
+  const routeCoords = [
+    `${churchLng},${churchLat}`,
+    ...stops.map(x => `${x.lng},${x.lat}`),
+    `${churchLng},${churchLat}`
+  ].join(";")
+
+  const url = `https://router.project-osrm.org/route/v1/driving/${routeCoords}?overview=full&geometries=geojson`
+
+  const res = await fetch(url)
+  const json = await res.json()
+
+  if (!json.routes || !json.routes.length) {
+    alert("No route found")
+    return
+  }
+
+  if (routeLine) {
+    map.removeLayer(routeLine)
+  }
+
+  routeLine = L.geoJSON(json.routes[0].geometry, {
+    style: {
+      color: "blue",
+      weight: 4
+    }
+  }).addTo(map)
+
+  map.fitBounds(routeLine.getBounds(), { padding: [30, 30] })
+}
 
   loadPins()
   loadPendingPickupCount()
