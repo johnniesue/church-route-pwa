@@ -349,11 +349,10 @@ HOW TO USE:
 
 • Riders are added automatically when they scan Qr code to request a drop-off
 • Hover over pins to see rider name and address
-• Click a pin to delete a rider if needed
-• Click "Open in Google" to build your route
-• Adjust the route in Google Maps as needed
+• Take roll-call and click the pin to delete absent riders
+• Click "Open in Google" to build the route
+• Then optomize route in Google Maps by reordering the sequence of addresses
 
-TIP:
-Always verify your route in Google before driving.
+
 `)
 }
