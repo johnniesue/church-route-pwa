@@ -185,7 +185,7 @@ async function buildRoute() {
   const uniqueStops = [...new Set(stops)]
 
   // 🚨 ADD YOUR API KEY HERE
-  const apiKey = "AIzaSyAGgF9H47ZBPepZHKx_Lgc_nEQlmbnRm9o"
+  const apiKey = ""
 
   const origin = churchAddress
   const destination = churchAddress
