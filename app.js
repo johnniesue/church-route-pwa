@@ -126,6 +126,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   .select("id")
   .eq("lat", lat)
   .eq("lng", lng)
+  .eq("status", "pending")
 
   if(existing && existing.length > 0){
     alert("This address has already been submitted")
