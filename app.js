@@ -124,8 +124,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
  const { data: existing } = await db
   .from("pickup_addresses")
   .select("id")
-  .eq("lat", lat)
-  .eq("lng", lng)
+  .ilike("address", address)
   .eq("status", "pending")
 
   if(existing && existing.length > 0){
