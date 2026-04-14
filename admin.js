@@ -91,7 +91,6 @@ async function loadPins() {
   data.forEach(row => {
     if (row.lat == null || row.lng == null) return
 
-    if (distanceMiles(churchLat, churchLng, Number(row.lat), Number(row.lng)) <= 0.15) return
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
 
