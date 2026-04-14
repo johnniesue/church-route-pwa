@@ -10,13 +10,16 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 // 🧱 HELPERS
 // ==============================
 function formatAddress(address) {
-  const parts = address.split(',')
+  if (!address) return ""
 
-  const line1 = parts[0]?.trim() || ''
-  const city = parts[1]?.trim() || ''
-  const state = parts[2]?.trim() || ''
+  const parts = address.split(",")
 
-  return `${line1}<br>${city}, ${state}`
+  const streetNumber = parts[0]?.trim() || ""
+  const streetName = parts[1]?.trim() || ""
+  const city = parts[2]?.trim() || ""
+  const state = parts[4]?.trim() || ""
+
+  return `${streetNumber} ${streetName}<br>${city}, ${state}`
 }
 
 function distanceMiles(lat1, lng1, lat2, lng2) {
