@@ -102,7 +102,7 @@ async function loadPins() {
     `)
 
     marker.bindTooltip(
-      `<b>${row.name}</b><br>${row.address}`,
+      `<b>${row.name}</b><br>${formatAddress(row.address)}`,
       {
         direction: "top",
         offset: [0, -10]
