@@ -195,11 +195,24 @@ async function buildRoute() {
     .map(stop => encodeURIComponent(stop))
     .join("|")
 
-  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=optimize:true|${waypointString}&key=${apiKey}`
 
   try {
-    const response = await fetch(url)
-    const data = await response.json()
+   const response = await fetch("https://YOUR_PROJECT_REF.functions.supabase.co/optimize-route", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ stops: uniqueStops })
+})
+
+const result = await response.json()
+
+if (result.error) {
+  alert(result.error)
+  return
+}
+
+const optimizedStops = result.optimizedStops
 
     if (!data.routes || !data.routes.length) {
       alert("No route found")
