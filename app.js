@@ -135,7 +135,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   // insert
   const { error } = await db
     .from("pickup_addresses")
-    .insert([{ name, address, lat, lng }])
+    .insert([{ name, address, lat, lng, status: "pending" }])
 
   if(error){
     console.error(error)
