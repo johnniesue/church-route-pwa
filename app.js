@@ -155,10 +155,20 @@ address = address
     return
   }
 
-  // insert
-  const { error } = await db
-    .from("pickup_addresses")
-    .insert([{ name, address, lat, lng, status: "pending" }])
+// CLEAN FINAL ADDRESS BEFORE SAVING (FOR BOTH CASES)
+let cleanAddress = address
+
+cleanAddress = cleanAddress
+  .replace("United States", "")
+  .replace("Texas", "TX")
+  .replace("Dallas County", "")
+  .replace(/\b\d{5},?\s*/g, "") // remove weird zip placement
+  .replace(/,\s*,/g, ",")
+  .trim()
+
+const { error } = await db
+  .from("pickup_addresses")
+  .insert([{ name, address: cleanAddress, lat, lng, status: "pending" }])
 
   if (error) {
     console.error(error)
