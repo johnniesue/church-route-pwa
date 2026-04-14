@@ -76,7 +76,14 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
   const name = document.getElementById("name").value.trim()
-  const address = addressInput.value.trim()
+  let address = addressInput.value.trim()
+
+// CLEAN ADDRESS BEFORE SAVING
+address = address
+  .replace("United States", "")
+  .replace("Texas", "TX")
+  .replace(/,\s*,/g, ",")
+  .trim()
 
   if (!name || !address) {
     alert("Please enter your name and address")
