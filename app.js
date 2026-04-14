@@ -120,14 +120,19 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
   }
 
   
-  // prevent duplicate
- const { data: existing } = await db
+ // prevent duplicate (location-based)
+const { data: existing } = await db
   .from("pickup_addresses")
-  .select("id")
-  .ilike("address", address)
+  .select("lat,lng")
   .eq("status", "pending")
 
-  if(existing && existing.length > 0){
+if (existing && existing.length > 0) {
+  const isDuplicate = existing.some(row =>
+    Math.abs(row.lat - lat) < 0.0001 &&
+    Math.abs(row.lng - lng) < 0.0001
+  )
+
+  if (isDuplicate) {
     alert("This address has already been submitted")
     return
   }
