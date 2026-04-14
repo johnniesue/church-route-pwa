@@ -189,14 +189,14 @@ async function buildRoute() {
     .map(addr => encodeURIComponent(addr))
     .join("|")
 
-  const url =
-    "https://www.google.com/maps/dir/?api=1" +
-    `&origin=${encodeURIComponent(churchAddress)}` +
-    `&destination=${encodeURIComponent(churchAddress)}` +
-    `&travelmode=driving` +
-    `&waypoints=${waypoints}`
+const url =
+  "https://www.google.com/maps/dir/?api=1" +
+  `&origin=${encodeURIComponent(churchAddress)}` +
+  `&destination=${encodeURIComponent(churchAddress)}` +
+  "&travelmode=driving" +
+  `&waypoints=${waypoints}`
 
-  window.open(url, "_blank")
+window.location.href = url;
 }
 
 // ==============================
