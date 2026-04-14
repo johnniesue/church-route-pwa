@@ -184,44 +184,26 @@ async function buildRoute() {
 
   const uniqueStops = [...new Set(stops)]
 
-  // 🚨 ADD YOUR API KEY HERE
-  const apiKey = ""
-
   const origin = churchAddress
   const destination = churchAddress
-  const waypoints = uniqueStops
-
-  const waypointString = waypoints
-    .map(stop => encodeURIComponent(stop))
-    .join("|")
-
 
   try {
-   const response = await fetch("https://YOUR_PROJECT_REF.functions.supabase.co/optimize-route", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ stops: uniqueStops })
-})
+    const response = await fetch("https://gwoirenrtxneamlzlgrf.functions.supabase.co/optimize-route", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ stops: uniqueStops })
+    })
 
-const result = await response.json()
+    const result = await response.json()
 
-if (result.error) {
-  alert(result.error)
-  return
-}
-
-const optimizedStops = result.optimizedStops
-
-    if (!data.routes || !data.routes.length) {
-      alert("No route found")
+    if (result.error) {
+      alert(result.error)
       return
     }
 
-    const order = data.routes[0].waypoint_order
-
-    const optimizedStops = order.map(i => uniqueStops[i])
+    const optimizedStops = result.optimizedStops
 
     // build final Google Maps link
     const finalWaypoints = optimizedStops
