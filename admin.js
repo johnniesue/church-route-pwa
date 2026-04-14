@@ -2,7 +2,7 @@
 // 🔧 CONFIG / SETUP
 // ==============================
 const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
-const SUPABASE_KEY = "sb_publishable_OHXof8IMFPgDFC2S_XSAXA_8dh31iav"
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
