@@ -119,14 +119,7 @@ document.getElementById("pickupForm").addEventListener("submit", async (e) => {
     lng = parseFloat(geoData[0].lon)
   }
 
-  // 15-mile check
-  const miles = distanceMiles(churchLat, churchLng, lat, lng)
-
-if(miles > 15){
-  alert("Address must be within 15 miles of the church")
-  return
-}
-
+  
   // prevent duplicate
  const { data: existing } = await db
   .from("pickup_addresses")
