@@ -12,29 +12,28 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 function formatAddress(address) {
   if (!address) return ""
 
-  const parts = address.split(",")
+  const parts = address.split(",").map(p => p.trim())
 
-  const streetNumber = parts[0]?.trim() || ""
-  const streetName = parts[1]?.trim() || ""
-  const city = parts[2]?.trim() || ""
-  const state = parts[4]?.trim() || ""
+  const streetNumber = parts[0] || ""
+  const streetName = parts[1] || ""
 
-  return `${streetNumber} ${streetName}<br>${city}, ${state}`
-}
+  // City = first valid non-street, non-county part
+  let city = parts.find(p =>
+    p &&
+    p !== streetNumber &&
+    p !== streetName &&
+    !p.includes("County") &&
+    p !== "United States" &&
+    !/^\d{5}$/.test(p) // not zip
+  ) || ""
 
-function distanceMiles(lat1, lng1, lat2, lng2) {
-  const R = 3958.8
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
+  // State = explicitly Texas (since your app is local)
+  let state = parts.find(p => p === "Texas") || ""
 
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2
+  const line1 = `${streetNumber} ${streetName}`.trim()
+  const line2 = city && state ? `${city}, ${state}` : city || ""
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
+  return `${line1}<br>${line2}`
 }
 
 // ==============================
