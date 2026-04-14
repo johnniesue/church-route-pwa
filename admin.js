@@ -2,7 +2,7 @@
 // 🔧 CONFIG / SETUP
 // ==============================
 const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3b2lyZW5ydHhuZWFtbHpsZ3JmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Nzk4OTYsImV4cCI6MjA4ODI1NTg5Nn0.uEnMgMJvlsGW-xyaGBtZ0VWFLi-VKu27P8jI9UN7tUU"
+const SUPABASE_KEY = "YOUR_KEY_HERE"
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -53,11 +53,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 // ==============================
 // 📦 STATE
 // ==============================
-let manualOrder = []
-let manualMode = false
-let routeMode = false   
 let pinMarkers = []
-let routeLine = null
 
 // ==============================
 // 🔄 INITIAL LOAD
@@ -66,10 +62,8 @@ loadPins()
 loadPendingPickupCount()
 
 setInterval(() => {
-  if (!routeMode) {
-    loadPins()
-    loadPendingPickupCount()
-  }
+  loadPins()
+  loadPendingPickupCount()
 }, 10000)
 
 
@@ -99,23 +93,19 @@ async function loadPins() {
 
     const marker = L.marker([row.lat, row.lng]).addTo(map)
 
-
-// click (delete button)
-marker.bindPopup(`
-  <b>${row.name}</b><br><br>
-  <button onclick="deleteRider('${row.id}')"
-    style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
-    Delete Rider
-  </button>
-`)
+    marker.bindPopup(`
+      <b>${row.name}</b><br><br>
+      <button onclick="deleteRider('${row.id}')"
+        style="background:#dc3545;color:white;padding:8px;border:none;border-radius:6px;">
+        Delete Rider
+      </button>
+    `)
 
     marker.bindTooltip(
       `<b>${row.name}</b><br>${row.address}`,
       {
-        permanent: false,
         direction: "top",
-        offset: [0, -10],
-        opacity: 1
+        offset: [0, -10]
       }
     )
 
@@ -138,47 +128,9 @@ async function loadPendingPickupCount() {
   }
 
   const countEl = document.getElementById("pickupCount")
-  const listEl = document.getElementById("pickupList")
 
   if (countEl) countEl.innerText = data?.length ?? 0
-
-  if (listEl) {
-    const maxVisible = 6
-
-    if (!data || data.length === 0) {
-      listEl.innerHTML = "No riders"
-    } else {
-      const visible = data.slice(0, maxVisible)
-      const remaining = data.length - maxVisible
-
-      listEl.innerHTML = `
-        <div style="max-height:120px; overflow-y:auto; padding-right:4px;">
-          ${visible.map(r => `• ${r.name}`).join("<br>")}
-          ${remaining > 0 ? `<br>+ ${remaining} more...` : ""}
-        </div>
-      `
-    }
-  }
 }
-//=========================
-// 🚚 DROP OFF
-// ==============================
-async function dropOff(id) {
-  const { error } = await db
-    .from("pickup_addresses")
-    .update({ status: "dropped_off", dropped_at: new Date() })
-    .eq("id", id)
-
-  if (error) {
-    console.error("dropOff error:", error)
-    alert("Error updating stop")
-    return
-  }
-
-  loadPins()
-  loadPendingPickupCount()
-}
-
 
 // ==============================
 // ❌ DELETE RIDER
@@ -203,21 +155,17 @@ async function deleteRider(id) {
 }
 
 // ==============================
-// 🛣️ DRAW ROUTE (MAP)
+// 🌍 OPEN IN GOOGLE MAPS (FIXED)
 // ==============================
-async function drawRoute() {
-  console.log("DRAW ROUTE CLICKED")
-
-  routeMode = true
-
+async function buildRoute() {
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("id,name,address,lat,lng")
+    .select("address")
     .eq("status", "pending")
 
   if (error) {
-    console.error("drawRoute error:", error)
-    alert("Error loading route stops")
+    console.error(error)
+    alert("Error loading stops")
     return
   }
 
@@ -226,133 +174,39 @@ async function drawRoute() {
     return
   }
 
-  const stops = data
-    .map(x => ({
-      lat: Number(x.lat),
-      lng: Number(x.lng)
-    }))
-    .filter(x => Number.isFinite(x.lat) && Number.isFinite(x.lng))
-    .filter(x => distanceMiles(churchLat, churchLng, x.lat, x.lng) > 0.15)
-
-  if (stops.length === 0) {
-    alert("No valid stops after filtering")
-    return
-  }
-
-  // ✅ DO NOT pre-sort (let OSRM optimize)
-  const routeCoords = [
-    `${churchLng},${churchLat}`,
-    ...stops.map(x => `${x.lng},${x.lat}`)
-  ].join(";")
-
-  const url = `https://router.project-osrm.org/trip/v1/driving/${routeCoords}?overview=full&geometries=geojson&source=first&roundtrip=false`
-
-  let json
-  try {
-    const res = await fetch(url)
-    json = await res.json()
-  } catch (err) {
-    console.error("Route fetch failed:", err)
-    alert("Failed to fetch route")
-    return
-  }
-
-  if (!json.trips || !json.trips.length) {
-    console.error("OSRM response:", json)
-    alert("No route found")
-    return
-  }
-
-  const orderedStops = json.waypoints.slice(1)
-
-  // clear markers
-  pinMarkers.forEach(m => map.removeLayer(m))
-  pinMarkers = []
-
-  // numbered markers
-  orderedStops.forEach((wp, index) => {
-    const lat = wp.location[1]
-    const lng = wp.location[0]
-
-    const marker = L.marker([lat, lng], {
-      icon: L.divIcon({
-        className: "custom-marker",
-        html: `
-          <div style="
-            background:#2563eb;
-            color:white;
-            border-radius:50%;
-            width:28px;
-            height:28px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:bold;
-          ">
-            ${index + 1}
-          </div>
-        `
-      })
-    }).addTo(map)
-
-    pinMarkers.push(marker)
-  })
-
-  if (routeLine) {
-    map.removeLayer(routeLine)
-  }
-
-  routeLine = L.geoJSON(json.trips[0].geometry, {
-    style: {
-      color: "blue",
-      weight: 4
-    }
-  }).addTo(map)
-
-  map.fitBounds(routeLine.getBounds(), { padding: [30, 30] })
-}
-
-
-// ==============================
-// 🌍 OPEN IN GOOGLE MAPS
-// ==============================
-async function openInGoogle() {
-  const { data } = await db
-    .from("pickup_addresses")
-    .select("address")
-    .eq("status", "pending")
-
-  if (!data || data.length === 0) {
-    alert("No stops")
-    return
-  }
-
+  // clean addresses
   const stops = data
     .map(x => x.address?.trim())
-    .filter(x => x && x.length > 0)
+    .filter(x => x && x.length > 5)
 
-  const waypoints = stops.join("|")
+  // remove duplicates
+  const uniqueStops = [...new Set(stops)]
+
+  const waypoints = uniqueStops
+    .map(addr => encodeURIComponent(addr))
+    .join("|")
 
   const url =
     "https://www.google.com/maps/dir/?api=1" +
     `&origin=${encodeURIComponent(churchAddress)}` +
     `&destination=${encodeURIComponent(churchAddress)}` +
     `&travelmode=driving` +
-    `&waypoints=${encodeURIComponent(waypoints)}`
+    `&waypoints=${waypoints}`
 
   window.open(url, "_blank")
 }
 
+// ==============================
+// 📘 HELP
+// ==============================
 function showHelp() {
  alert(`
 HOW TO USE:
 
-• Riders are added automatically when they scan Qr code to request a drop-off
-• Hover over pins to see rider name and address
-• Take roll-call and click the pin to delete absent riders
-• Click "Open in Google" to build the route
-• Then optomize route in Google Maps by reordering the sequence of addresses
-
-
+• Riders are added automatically
+• Hover over pins to see details
+• Delete riders if needed
+• Click "Open in Google" to build route
+• Adjust route in Google if needed
 `)
 }
