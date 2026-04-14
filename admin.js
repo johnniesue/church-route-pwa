@@ -2,7 +2,7 @@
 // 🔧 CONFIG / SETUP
 // ==============================
 const SUPABASE_URL = "https://gwoirenrtxneamlzlgrf.supabase.co"
-const SUPABASE_KEY = "YOUR_KEY_HERE"
+const SUPABASE_KEY = "sb_publishable_OHXof8IMFPgDFC2S_XSAXA_8dh31iav"
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
