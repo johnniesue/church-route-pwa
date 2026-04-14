@@ -163,7 +163,7 @@ async function deleteRider(id) {
 async function buildRoute() {
   const { data, error } = await db
     .from("pickup_addresses")
-    .select("address")
+    .select("address, lat, lng")
     .eq("status", "pending")
 
   if (error) {
@@ -178,11 +178,11 @@ async function buildRoute() {
   }
 
   // clean addresses
-  const stops = data
-    .map(x => x.address?.trim())
-    .filter(x => x && x.length > 5)
+const stops = data
+  .filter(x => x.lat && x.lng)
+  .map(x => `${x.lat},${x.lng}`)
 
-  const uniqueStops = [...new Set(stops)]
+const uniqueStops = [...new Set(stops)]
 
   const origin = churchAddress
   const destination = churchAddress
