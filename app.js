@@ -126,22 +126,44 @@ const { data: existing } = await db
   .select("lat,lng")
   .eq("status", "pending")
 
+// prevent duplicate (location-based)
+const { data: existing } = await db
+  .from("pickup_addresses")
+  .select("lat,lng")
+  .eq("status", "pending")
+
+let isDuplicate = false
+
 if (existing && existing.length > 0) {
-  const isDuplicate = existing.some(row =>
+  isDuplicate = existing.some(row =>
     Math.abs(row.lat - lat) < 0.0001 &&
     Math.abs(row.lng - lng) < 0.0001
   )
+}
 
-  if (isDuplicate) {
-    alert("This address has already been submitted")
-    return
-  }
+if (isDuplicate) {
+  alert("This address has already been submitted")
+  return
+}
 
-  // insert
-  const { error } = await db
-    .from("pickup_addresses")
-    .insert([{ name, address, lat, lng, status: "pending" }])
+// ✅ INSERT MUST BE OUTSIDE
+const { error } = await db
+  .from("pickup_addresses")
+  .insert([{ name, address, lat, lng, status: "pending" }])
 
+if(error){
+  console.error(error)
+  alert("Error saving pickup request")
+  return
+}
+
+alert("Pickup request sent! 🚐 Please be ready — the van leaves by 7:45.")
+
+document.getElementById("pickupForm").reset()
+addressInput.value = ""
+selectedSuggestion = null
+lastResults = []
+suggestionsEl.innerHTML = ""
   if(error){
     console.error(error)
     alert("Error saving pickup request")
