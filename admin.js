@@ -182,21 +182,52 @@ async function buildRoute() {
     .map(x => x.address?.trim())
     .filter(x => x && x.length > 5)
 
-  // remove duplicates
   const uniqueStops = [...new Set(stops)]
 
+  // 🚨 ADD YOUR API KEY HERE
+  const apiKey = "AIzaSyAGgF9H47ZBPepZHKx_Lgc_nEQlmbnRm9o"
+
+  const origin = churchAddress
+  const destination = churchAddress
   const waypoints = uniqueStops
-    .map(addr => encodeURIComponent(addr))
+
+  const waypointString = waypoints
+    .map(stop => encodeURIComponent(stop))
     .join("|")
 
-const url =
-  "https://www.google.com/maps/dir/?api=1" +
-  `&origin=${encodeURIComponent(churchAddress)}` +
-  `&destination=${encodeURIComponent(churchAddress)}` +
-  "&travelmode=driving" +
-  `&waypoints=${waypoints}`
+  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=optimize:true|${waypointString}&key=${apiKey}`
 
-window.location.href = url;
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (!data.routes || !data.routes.length) {
+      alert("No route found")
+      return
+    }
+
+    const order = data.routes[0].waypoint_order
+
+    const optimizedStops = order.map(i => uniqueStops[i])
+
+    // build final Google Maps link
+    const finalWaypoints = optimizedStops
+      .map(stop => encodeURIComponent(stop))
+      .join("|")
+
+    const finalUrl =
+      "https://www.google.com/maps/dir/?api=1" +
+      `&origin=${encodeURIComponent(origin)}` +
+      `&destination=${encodeURIComponent(destination)}` +
+      "&travelmode=driving" +
+      `&waypoints=${finalWaypoints}`
+
+    window.location.href = finalUrl
+
+  } catch (err) {
+    console.error(err)
+    alert("Route optimization failed")
+  }
 }
 
 // ==============================
