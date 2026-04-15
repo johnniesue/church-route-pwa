@@ -197,11 +197,11 @@ const uniqueStops = [...new Set(stops)]
     })
 
     const result = await response.json()
-
-    if (result.error) {
-      alert(result.error)
-      return
-    }
+if (result.error) {
+  console.log("FULL ERROR:", result)
+  alert(JSON.stringify(result, null, 2))
+  return
+}
 
     const optimizedStops = result.optimizedStops
 
