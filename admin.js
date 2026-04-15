@@ -164,28 +164,32 @@ async function buildRoute() {
   const { data, error } = await db
     .from("pickup_addresses")
     .select("address, lat, lng")
-    .eq("status", "pending")
+    .eq("status", "pending");
 
   if (error) {
-    console.error(error)
-    alert("Error loading stops")
-    return
+    console.error(error);
+    alert("Error loading stops");
+    return;
   }
 
   if (!data || data.length === 0) {
-    alert("No pending stops")
-    return
+    alert("No pending stops");
+    return;
   }
 
-  // clean addresses
-const stops = data
-  .filter(x => x.lat && x.lng)
-  .map(x => `${x.lat},${x.lng}`)
+  const stops = data
+    .filter(x => x.lat != null && x.lng != null)
+    .map(x => `${Number(x.lat)},${Number(x.lng)}`);
 
-const uniqueStops = [...new Set(stops)]
+  const uniqueStops = [...new Set(stops)];
 
-  const origin = churchAddress
-  const destination = churchAddress
+  if (uniqueStops.length === 0) {
+    alert("No valid stops found");
+    return;
+  }
+
+  const origin = churchAddress;
+  const destination = churchAddress;
 
   try {
     const response = await fetch("https://gwoirenrtxneamlzlgrf.functions.supabase.co/optimize-route", {
@@ -194,34 +198,34 @@ const uniqueStops = [...new Set(stops)]
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ stops: uniqueStops })
-    })
+    });
 
-    const result = await response.json()
-if (result.error) {
-  console.log("FULL ERROR:", result)
-  alert(JSON.stringify(result, null, 2))
-  return
-}
+    const result = await response.json();
 
-    const optimizedStops = result.optimizedStops
+    if (result.error) {
+      console.log("FULL ERROR:", result);
+      alert(JSON.stringify(result, null, 2));
+      return;
+    }
 
-    // build final Google Maps link
+    const optimizedStops = result.optimizedStops;
+
     const finalWaypoints = optimizedStops
       .map(stop => encodeURIComponent(stop))
-      .join("|")
+      .join("|");
 
     const finalUrl =
       "https://www.google.com/maps/dir/?api=1" +
       `&origin=${encodeURIComponent(origin)}` +
       `&destination=${encodeURIComponent(destination)}` +
       "&travelmode=driving" +
-      `&waypoints=${finalWaypoints}`
+      `&waypoints=${finalWaypoints}`;
 
-    window.location.href = finalUrl
+    window.location.href = finalUrl;
 
   } catch (err) {
-    console.error(err)
-    alert("Route optimization failed")
+    console.error(err);
+    alert("Route optimization failed");
   }
 }
 
